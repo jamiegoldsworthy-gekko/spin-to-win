@@ -78,9 +78,13 @@
     overflow:hidden;
     transition: background 0.3s ease;
   }
-  button{font-family:inherit;}
+  button{font-family:inherit;touch-action:manipulation;}
+  input,select,textarea{touch-action:manipulation;}
+  button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{
+    outline:2px solid var(--brand-primary);outline-offset:2px;
+  }
 
-  .app{display:flex;flex-direction:column;height:100vh;position:relative;}
+  .app{display:flex;flex-direction:column;height:100vh;height:100dvh;position:relative;}
 
   /* Streamlined Topbar with Left-Aligned Menu Toggle */
   header.topbar{
@@ -474,8 +478,17 @@
   .entry-add input[type=number]{width:78px;flex:0 0 78px;text-align:center;padding:11px 6px;}
   ul.entries{list-style:none;margin:0;padding:0;}
   ul.entries li{
-    display:flex;align-items:center;gap:9px;padding:8px 10px;margin-bottom:6px;
+    display:flex;align-items:center;gap:7px;padding:8px 10px;margin-bottom:6px;
     background:var(--bg-main);border:1px solid var(--line);border-radius:10px;
+    transition:border-color 0.2s, background 0.2s;
+  }
+  ul.entries li.low-stock{
+    border-color:rgba(251, 188, 4, 0.55);
+    background:rgba(251, 188, 4, 0.06);
+  }
+  .low-stock-tag{
+    font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.04em;
+    padding:2px 6px;border-radius:99px;background:rgba(251,188,4,0.18);color:#fbbc04;flex:0 0 auto;
   }
   .swatch{width:14px;height:14px;border-radius:4px;flex:0 0 14px;box-shadow:inset 0 0 0 1px rgba(255,255,255,.1);}
   .entry-label{
@@ -483,8 +496,18 @@
     color:var(--text-main);padding:4px 0;min-width:0;font-family:inherit;
   }
   .entry-label:focus{outline:none;border-bottom:1px solid var(--brand-primary);}
+  .qty-wrap{
+    display:inline-flex;align-items:center;gap:3px;flex:0 0 auto;
+  }
+  .qty-step{
+    width:28px;height:30px;border:1px solid var(--line);border-radius:7px;
+    background:var(--bg-panel);color:var(--text-main);font-size:15px;font-weight:700;
+    line-height:1;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;
+    padding:0;transition:background .12s, border-color .12s;
+  }
+  .qty-step:hover{border-color:var(--brand-primary);background:rgba(8,102,255,0.12);}
   .qty{
-    width:72px;flex:0 0 72px;text-align:center;font-size:13px;padding:4px;
+    width:58px;flex:0 0 58px;text-align:center;font-size:13px;padding:4px 2px;
     border:1px solid var(--line);border-radius:7px;font-family:inherit;color:var(--text-main);
   }
   .del{
@@ -492,6 +515,26 @@
     line-height:1;padding:6px 8px;border-radius:6px;flex:0 0 auto;
   }
   .del:hover{color:#E14C6B;background:rgba(225, 76, 107, 0.1);}
+
+  /* Depleted Prizes Collapsible Drawer */
+  .depleted-box{
+    margin-top:10px;border:1px dashed rgba(248,113,113,0.35);border-radius:10px;
+    background:rgba(239,68,68,0.05);padding:8px 10px;display:none;
+  }
+  .depleted-box.show{display:block;}
+  .depleted-box summary{
+    cursor:pointer;font-size:12px;font-weight:700;color:#f87171;list-style:none;
+    display:flex;align-items:center;justify-content:space-between;user-select:none;
+  }
+  .depleted-box summary::-webkit-details-marker{display:none;}
+  ul.depleted-list{list-style:none;margin:8px 0 0;padding:0;}
+  ul.depleted-list li{
+    display:flex;align-items:center;justify-content:space-between;gap:8px;
+    padding:6px 8px;margin-bottom:5px;border-radius:8px;
+    background:var(--bg-panel);border:1px solid var(--line);font-size:12.5px;
+  }
+  ul.depleted-list li:last-child{margin-bottom:0;}
+  .depleted-name{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--text-muted);text-decoration:line-through;}
   .empty{padding:22px 14px;text-align:center;color:var(--text-muted);font-size:13px;
     border:1px dashed var(--line);border-radius:10px;background:var(--bg-main);}
   .count-pill{
@@ -630,20 +673,66 @@
     display: none;
   }
   .burger-fab {
-    width: 42px;
-    height: 42px;
+    width: 48px;
+    height: 48px;
     border-radius: 50%;
-    background: rgba(20, 20, 20, 0.45);
-    border: 1px solid rgba(255, 255, 255, 0.16);
-    color: rgba(255, 255, 255, 0.75);
-    font-size: 18px;
+    background: rgba(20, 20, 20, 0.48);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 19px;
     line-height: 1;
     cursor: pointer;
+    position: relative;
     display: flex;
     align-items: center;
     justify-content: center;
     backdrop-filter: blur(6px);
     transition: background 0.2s, color 0.2s, border-color 0.2s, transform 0.15s;
+  }
+  .present-status-dot {
+    position: absolute;
+    bottom: 2px;
+    right: 2px;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: #8899a6;
+    border: 2px solid rgba(10,10,10,0.9);
+    pointer-events: none;
+  }
+  .present-status-dot.online { background: #4ade80; }
+  .present-status-dot.cached { background: #fbbc04; }
+  .present-status-dot.offline { background: #f87171; }
+
+  /* Compact Live Telemetry Pill in Topbar */
+  .telemetry-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 10px;
+    border-radius: 99px;
+    border: 1px solid var(--line);
+    background: var(--bg-main);
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--text-muted);
+    white-space: nowrap;
+    flex: 0 0 auto;
+  }
+  .telemetry-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #8899a6;
+    flex: 0 0 8px;
+  }
+  .telemetry-pill.online .telemetry-dot { background: #4ade80; box-shadow: 0 0 6px rgba(74,222,128,0.6); }
+  .telemetry-pill.cached .telemetry-dot { background: #fbbc04; }
+  .telemetry-pill.offline .telemetry-dot { background: #f87171; }
+  .telemetry-kiosk-id {
+    opacity: 0.72;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 10.5px;
   }
   .burger-fab:hover,
   .burger-fab.open {
@@ -739,21 +828,30 @@
     cursor:pointer;
     z-index: 2;
     position: relative;
+    touch-action: manipulation;
+    user-select: none;
+    -webkit-user-select: none;
   }
   .pointer{
-    position:absolute;top:-2px;left:50%;transform:translateX(-50%);
+    position:absolute;top:-2px;left:50%;transform:translateX(-50%) rotate(0deg);
+    transform-origin: 50% -26px;
+    transition: transform 0.08s cubic-bezier(.22,1,.36,1);
     width:0;height:0;border-left:19px solid transparent;border-right:19px solid transparent;
     border-top:34px solid var(--pointer-color, var(--text-main));
     filter:drop-shadow(0 3px 5px rgba(0,0,0,.5));pointer-events:none;z-index:3;
+  }
+  .pointer.tick{
+    transform:translateX(-50%) rotate(-18deg);
+    transition: transform 0.03s ease-out;
   }
   .pointer::after{
     content:'';position:absolute;top:-40px;left:-13px;width:26px;height:26px;border-radius:50%;
     background:var(--pointer-color, var(--text-main));box-shadow:0 3px 6px rgba(0,0,0,.3);
   }
   
-  .stage-actions{display:flex;gap:12px;align-items:center;flex:0 0 auto; z-index: 3;}
+  .stage-actions{display:flex;gap:14px;align-items:center;flex:0 0 auto; z-index: 3; user-select: none; -webkit-user-select: none;}
   .btn-spin{
-    border:none;border-radius:999px;padding:18px 60px;font-size:18px;font-weight:800;
+    border:none;border-radius:999px;padding:18px 62px;min-height:58px;font-size:19px;font-weight:800;
     letter-spacing:.02em;color:#fff;cursor:pointer;
     background:linear-gradient(135deg,var(--brand-primary) 0%,var(--brand-deep) 55%,#7C4DFF 140%);
     box-shadow:0 6px 20px rgba(8,102,255,.35);transition:.15s;
@@ -762,10 +860,20 @@
   .btn-spin:disabled{opacity:.5;cursor:not-allowed;transform:none;}
   .icon-btn{
     position:relative;
-    width:46px;height:46px;border-radius:50%;border:1px solid var(--line);background:var(--bg-panel);
+    width:48px;height:48px;border-radius:50%;border:1px solid var(--line);background:var(--bg-panel);
     cursor:pointer;font-size:18px;line-height:1;color:var(--text-muted);
     display:flex;align-items:center;justify-content:center;transition:.15s;
   }
+
+  /* All Prizes Claimed Empty-Wheel Kiosk Banner */
+  .all-claimed-banner{
+    display:none;flex-direction:column;align-items:center;gap:8px;
+    padding:12px 18px;border-radius:14px;background:var(--bg-panel);
+    border:1px solid rgba(251,188,4,0.4);box-shadow:var(--shadow);z-index:4;text-align:center;
+  }
+  .all-claimed-banner.show{display:flex;}
+  .all-claimed-banner b{font-size:15px;color:#fbbc04;}
+  .all-claimed-banner span{font-size:12px;color:var(--text-muted);}
   .icon-btn:hover{background:var(--line);color:var(--text-main);}
   .icon-btn.off{color:#f87171;border-color:rgba(248, 113, 113, 0.3);background:rgba(248, 113, 113, 0.1);}
   .icon-btn.off::after{
@@ -791,6 +899,7 @@
   /* Elevate confirmation & save dialogs above the startup modal */
   #saveThemeOverlay { z-index: 720; }
   #confirmOverlay { z-index: 750; }
+  #pinOverlay { z-index: 760; }
 
   .winner-card{
     background:var(--bg-panel);border:1px solid var(--line); border-radius:22px;padding:38px 46px;text-align:center;max-width:620px;width:100%;
@@ -799,9 +908,25 @@
   @keyframes pop{from{transform:scale(.86);opacity:0;}to{transform:scale(1);opacity:1;}}
   .winner-card .eyebrow{font-size:12px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--brand-primary);}
   .winner-card .prize{font-size:44px;font-weight:800;line-height:1.15;margin:14px 0 6px;letter-spacing:-.02em;word-break:break-word;}
-  .winner-card .stock-note{font-size:13px;color:var(--text-muted);margin-top:6px;font-weight:600;}
+  .winner-card .stock-note{
+    display:inline-block;font-size:13px;color:var(--text-muted);margin-top:8px;font-weight:700;
+    padding:4px 12px;border-radius:99px;background:rgba(136,153,166,0.12);
+  }
+  .winner-card .stock-note.low{background:rgba(251,188,4,0.16);color:#fbbc04;border:1px solid rgba(251,188,4,0.35);}
+  .winner-card .stock-note.sold-out{background:rgba(239,68,68,0.16);color:#f87171;border:1px solid rgba(239,68,68,0.35);}
   .winner-card .bar{height:5px;width:80px;margin:18px auto 0;border-radius:3px;background:linear-gradient(90deg,var(--brand-primary),#7C4DFF);}
   .winner-card .acts{display:flex;gap:10px;justify-content:center;margin-top:26px;flex-wrap:wrap;}
+  .winner-card .acts .btn{min-height:46px;padding:10px 20px;font-size:14px;}
+  .pin-pad{display:grid;grid-template-columns:repeat(3, 1fr);gap:8px;margin-top:12px;}
+  .pin-key{
+    min-height:48px;border:1px solid var(--line);border-radius:10px;background:var(--bg-main);
+    color:var(--text-main);font-size:18px;font-weight:800;cursor:pointer;transition:.12s;
+  }
+  .pin-key:hover{border-color:var(--brand-primary);background:rgba(8,102,255,0.12);}
+  .pin-dots{display:flex;justify-content:center;gap:12px;margin:14px 0 8px;}
+  .pin-dot{width:14px;height:14px;border-radius:50%;border:2px solid var(--line);background:transparent;transition:.12s;}
+  .pin-dot.filled{background:var(--brand-primary);border-color:var(--brand-primary);}
+  .pin-err{font-size:12px;font-weight:700;color:#f87171;min-height:16px;text-align:center;}
   canvas#confetti{position:fixed;inset:0;pointer-events:none;z-index:700;display:none;}
 
   /* ============================================================
@@ -1082,6 +1207,15 @@
     .intro-grid {
       grid-template-columns: 1fr;
     }
+    .telemetry-pill .telemetry-kiosk-id { display: none; }
+  }
+  @media (max-width: 640px) {
+    .telemetry-pill { display: none; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .wheel-glow, .wheel-glow::before { animation: none !important; }
+    .pointer { transition: none !important; }
+    .winner-card, .theme-picker-card, .intro-card, .shot-card { animation: none !important; }
   }
 </style>
 </head>
@@ -1092,6 +1226,13 @@
     <button class="cluster-btn left-menu-btn" id="btnToggleDrawer" title="Show or hide wheel setup">☰ <span class="lbl-hide-sm">Setup</span></button>
     <div class="logo-wrap" id="hdrLogoWrap" title="Triple tap for Themes"><img id="hdrLogo" alt="Logo"></div>
     <input class="title-edit" id="titleInput" value="Prize Draw" spellcheck="false" aria-label="Wheel title">
+    <div class="telemetry-pill" id="telemetryPill" title="Kiosk connectivity, cloud sync & wake lock status">
+      <span class="telemetry-dot"></span>
+      <span id="telemetryText">Local</span>
+      <span id="telemetryWake" style="display:none;" title="Screen Wake Lock Active">☀</span>
+      <span id="telemetryPin" style="display:none;" title="Kiosk PIN Lock Enabled">🔒</span>
+      <span class="telemetry-kiosk-id" id="telemetryKioskId"></span>
+    </div>
     <div class="control-cluster" role="toolbar" aria-label="Presentation Controls">
       <button class="cluster-btn" id="btnOpenThemePicker" title="Choose a theme">🎨 <span class="lbl-hide-sm">Theme</span></button>
       <button class="cluster-btn" id="btnHelp" title="How it works">?</button>
@@ -1101,7 +1242,7 @@
 
   <!-- Left-Aligned Single Minimal Burger / X Button when in Fullscreen / Present Mode -->
   <div class="present-corner" id="presentCorner">
-    <button class="burger-fab" id="btnPresentMenu" title="Menu" aria-label="Open menu">☰</button>
+    <button class="burger-fab" id="btnPresentMenu" title="Menu" aria-label="Open menu"><span id="presentMenuGlyph">☰</span><span class="present-status-dot" id="presentStatusDot" aria-hidden="true"></span></button>
     <div class="present-menu" id="presentMenu">
       <button id="pmSetup">⚙ Segments &amp; Setup</button>
       <button id="pmThemes">🎨 Themes &amp; Colours</button>
@@ -1154,6 +1295,10 @@
             <h3><span id="subALabel">On the wheel</span> <span class="count-pill" id="segCount">0 items</span></h3>
             <ul class="entries" id="entryList" data-list="entries"></ul>
             <div class="empty" id="emptyState">Nothing here yet — add one above, load a preset, or use the Import tab.</div>
+            <details class="depleted-box" id="depletedWrap">
+              <summary><span id="depletedTitle">Depleted Prizes (0 remaining)</span><span>▾</span></summary>
+              <ul class="depleted-list" id="depletedList"></ul>
+            </details>
             <div class="btn-row">
               <button class="btn sm" id="btnPresetA">Load prize preset</button>
               <button class="btn sm ghost" id="btnClearA">Clear this list</button>
@@ -1258,9 +1403,12 @@
 
         <!-- THEMES PANE (Between Import and Options) -->
         <section class="pane" data-pane="themes">
-          <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:6px;">
+          <div style="display:flex; align-items:center; justify-content:space-between; gap:6px; margin-bottom:6px;">
             <h3 style="margin:0;">Theme Preset</h3>
-            <button class="btn ghost sm" id="btnBrowseThemes" style="padding:3px 9px; min-height:26px; font-size:11.5px;">Visual Chooser</button>
+            <div style="display:flex; gap:5px; align-items:center;">
+              <button class="btn ghost sm" id="btnRefreshThemes" title="Re-fetch ./themes/index.json from GitHub" style="padding:3px 8px; min-height:26px; font-size:11.5px;">↻ Sync</button>
+              <button class="btn ghost sm" id="btnBrowseThemes" style="padding:3px 9px; min-height:26px; font-size:11.5px;">Visual Chooser</button>
+            </div>
           </div>
           <select id="themeSelect"></select>
           <div class="btn-row" style="margin-top:8px;">
@@ -1406,6 +1554,28 @@
             <div class="txt"><b>Confetti on the winner</b></div>
           </div>
 
+          <div class="slice-cap-box" style="margin-top:12px;">
+            <div class="slice-cap-head" style="margin-bottom:2px;">
+              <label for="optLowStockThreshold">Low-stock alert threshold</label>
+              <input type="number" id="optLowStockThreshold" min="0" max="1000" value="5" title="Highlight prizes with remaining quantity at or below this count (0 = off)">
+            </div>
+            <div class="slice-cap-sub">Highlights prizes in amber when remaining stock reaches this count (or ≤ 10% of locked baseline). Set 0 to disable.</div>
+          </div>
+
+          <div class="divider">KIOSK PIN LOCK</div>
+          <div class="instances-box" style="margin-top:0;">
+            <div class="recovery-head">
+              <span>Operator Present-Mode PIN</span>
+              <span class="sync-pill" id="pinStatusBadge">Unlocked</span>
+            </div>
+            <div class="recovery-sub">Optional 4-digit PIN to stop attendees from opening Setup, Themes, or exiting Present Mode at unattended kiosks.</div>
+            <div class="instance-add-row" style="margin-bottom:0;">
+              <input type="password" inputmode="numeric" pattern="[0-9]*" maxlength="4" id="pinConfigInput" placeholder="4-digit PIN (e.g. 1234)" autocomplete="off">
+              <button class="btn sm primary" id="btnSetPin">Set PIN</button>
+              <button class="btn sm ghost" id="btnClearPin" style="display:none; color:#f87171; border-color:rgba(248,113,113,0.3);">Remove</button>
+            </div>
+          </div>
+
           <div class="divider">BACKUP &amp; RESTORE</div>
           <p class="hint" style="margin-top:0">Export or import a full JSON backup of your segments, remaining counts, options, and saved themes.</p>
           <div class="btn-row">
@@ -1417,11 +1587,15 @@
 
         <!-- RESULTS PANE -->
         <section class="pane" data-pane="results">
-          <h3>Winners <span class="count-pill" id="histCount">0</span></h3>
+          <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:10px;">
+            <h3 style="margin:0;">Winners <span class="count-pill" id="histCount">0</span></h3>
+            <button class="btn ghost sm" id="btnUndoLastSpin" title="Undo the most recent spin and restore +1 stock" disabled>↩ Undo Last</button>
+          </div>
           <ol class="hist" id="histList"></ol>
           <div class="empty" id="histEmpty">No spins yet.</div>
           <div class="btn-row">
             <button class="btn" id="btnExportHist">Download CSV</button>
+            <button class="btn ghost" id="btnExportHistJson">Download JSON</button>
             <button class="btn ghost" id="btnClearHist">Clear results</button>
           </div>
         </section>
@@ -1433,8 +1607,16 @@
       <div class="present-title" id="presentTitle">Prize Draw</div>
       <div class="wheel-holder">
         <div class="wheel-glow off"></div>
-        <div class="pointer"></div>
+        <div class="pointer" id="wheelPointer"></div>
         <canvas id="wheel" width="640" height="640"></canvas>
+      </div>
+      <div class="all-claimed-banner" id="allClaimedBanner" role="status" aria-live="polite">
+        <b>🎉 All Prizes Claimed!</b>
+        <span>Every item on this wheel has been won.</span>
+        <div class="btn-row" style="margin-top:4px; justify-content:center;">
+          <button class="btn sm primary" id="btnStageResetBaseline">Reset to Baseline</button>
+          <button class="btn sm ghost" id="btnStageOpenSetup">Open Setup</button>
+        </div>
       </div>
       <div class="stage-actions">
         <button class="icon-btn" id="btnSoundQuick" title="Sound on/off">&#9834;</button>
@@ -1493,8 +1675,8 @@
   </div>
 </div>
 
-<div class="overlay" id="winnerOverlay">
-  <div class="winner-card">
+<div class="overlay" id="winnerOverlay" role="dialog" aria-modal="true" aria-labelledby="winnerPrize">
+  <div class="winner-card" aria-live="polite">
     <div class="stage-chip" id="winnerStageChip" style="display:none">Step 1 of 2</div>
     <div class="draw-title" id="winnerDrawTitle"></div>
     <div class="eyebrow" id="winnerEyebrow">The wheel has spoken</div>
@@ -1506,6 +1688,35 @@
       <button class="btn primary" id="btnPrimaryAct">Spin again</button>
       <button class="btn" id="btnShot">Save image</button>
       <button class="btn ghost" id="btnCloseWinner">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- OPERATOR PIN UNLOCK MODAL -->
+<div class="overlay" id="pinOverlay" role="dialog" aria-modal="true" aria-labelledby="pinModalTitle">
+  <div class="winner-card" style="max-width:340px; padding:24px 26px;">
+    <h3 id="pinModalTitle" style="font-size:16px; color:var(--text-main); text-transform:none; letter-spacing:normal; margin:0 0 4px;">🔒 Operator PIN Required</h3>
+    <p id="pinModalSub" style="font-size:12px; color:var(--text-muted); margin:0;">Enter your 4-digit kiosk PIN to unlock settings.</p>
+    <div class="pin-dots" id="pinDots">
+      <span class="pin-dot"></span><span class="pin-dot"></span><span class="pin-dot"></span><span class="pin-dot"></span>
+    </div>
+    <div class="pin-err" id="pinErrMsg"></div>
+    <div class="pin-pad" id="pinPad">
+      <button type="button" class="pin-key" data-k="1">1</button>
+      <button type="button" class="pin-key" data-k="2">2</button>
+      <button type="button" class="pin-key" data-k="3">3</button>
+      <button type="button" class="pin-key" data-k="4">4</button>
+      <button type="button" class="pin-key" data-k="5">5</button>
+      <button type="button" class="pin-key" data-k="6">6</button>
+      <button type="button" class="pin-key" data-k="7">7</button>
+      <button type="button" class="pin-key" data-k="8">8</button>
+      <button type="button" class="pin-key" data-k="9">9</button>
+      <button type="button" class="pin-key" data-k="clear" style="font-size:13px;">Clear</button>
+      <button type="button" class="pin-key" data-k="0">0</button>
+      <button type="button" class="pin-key" data-k="back">⌫</button>
+    </div>
+    <div class="acts" style="margin-top:14px;">
+      <button class="btn ghost sm" id="btnPinCancel" style="width:100%;">Cancel</button>
     </div>
   </div>
 </div>
@@ -1595,15 +1806,18 @@
 
 var FONT_STACK = "'Product Sans', 'Segoe UI', Inter, Arial, sans-serif";
 var PALETTE = ['#222222','#444444','#0866FF','#111111']; 
-var INK_DARK  = '#12263A';
 var RULE      = '#333333';   
 var RIM       = '#444444';   
 var STORE_KEY = 'spin-wheel-v3';
+var STORE_BAK_KEY = STORE_KEY + ':bak';
 var LEGACY_STORE_KEY = 'spin-wheel-v2';
 var LIVE_INV_KEY = 'spin-wheel-live-inventory-v4'; // Dedicated ultra-lightweight inventory store
 var BASELINE_KEY = 'spin-wheel-baseline-v4';       // Starting baseline counts for event reset
+var PENDING_SPIN_KEY = 'spin-wheel-pending-spin-v1'; // Write-ahead crash recovery journal
+var PIN_KEY = 'spin-wheel-kiosk-pin-v1';           // Optional 4-digit operator PIN hash
 var LAST_THEME_KEY = STORE_KEY + ':lastThemeId';
-var APP_VERSION = 'v1.1.0';
+var APP_VERSION = 'v1.2.0';
+var STATE_SCHEMA_VERSION = 2;
 var DEVICE_ID_KEY = 'spin-wheel-device-id-v1';     // Isolated per-kiosk device identifier
 var INSTANCES_LOCAL_KEY = 'spin-wheel-instances-v1';
 var THEMES_SW_CACHE = 'spin-wheel-themes-' + APP_VERSION;
@@ -1623,6 +1837,7 @@ function resolveAppAssetUrl(relPath) {
 
 var MAX_ITEM_QTY = 100000;
 var DEFAULT_MAX_SLICES = 60;
+var DEFAULT_LOW_STOCK_THRESHOLD = 5;
 
 var PRESET = [
   {label:'Prize 1', qty:1},
@@ -1714,24 +1929,14 @@ function defaultThemeId() {
     : 'default';
 }
 
-function prewarmFolderLogos(ids) {
-  if (!window.fetch || !Array.isArray(ids)) return;
-  ids.forEach(function(id){
-    var enc = encodeURIComponent(id);
-    var opts = navigator.onLine ? { cache: 'no-store' } : {};
-    fetch('./themes/' + enc + '/header-logo.png', opts).catch(function(){});
-    fetch('./themes/' + enc + '/center-logo.png', opts).catch(function(){});
-    fetch('./themes/' + enc + '/centre-logo.png', opts).catch(function(){});
-  });
-}
-
 /* Dynamically discover and load all theme folders from ./themes/index.json */
-function discoverThemesFromDisk() {
+function discoverThemesFromDisk(forceNetwork) {
   if (!window.fetch) {
     BUILTIN_THEMES = [getNeutralFallbackTheme()];
     return Promise.resolve(BUILTIN_THEMES);
   }
-  var fetchOpts = navigator.onLine ? { cache: 'no-store' } : {};
+  var useFresh = !!(navigator.onLine && (forceNetwork === true || forceNetwork === undefined));
+  var fetchOpts = useFresh ? { cache: 'no-store' } : {};
   return fetch('./themes/index.json', fetchOpts)
     .then(function(res){
       if (!res.ok) throw new Error('index.json status ' + res.status);
@@ -1740,7 +1945,6 @@ function discoverThemesFromDisk() {
     .then(function(idxData){
       var ids = parseThemeIndexEntries(idxData);
       if (!ids.length) throw new Error('No theme IDs in ./themes/index.json');
-      prewarmFolderLogos(ids);
       return Promise.all(ids.map(function(folderId){
         return fetch('./themes/' + encodeURIComponent(folderId) + '/theme.json', fetchOpts)
           .then(function(r){
@@ -1776,21 +1980,35 @@ var pendingLogoUploads = { hdr: null, center: null };
 var themeCustomAssets = {}; // themeId -> { hdr, center, updatedAt }
 var cloudSyncMode = 'local'; // 'local' | 'cached' | 'online'
 var kioskDeviceId = null;
+var stateSeq = 0;
+var stateUpdatedAt = 0;
+var themesFormDirty = false;
+var operatorPresentUnlocked = false;
+var lastWinningIdx = -1;
+var spinQueuedTimer = null;
+var lastSpinLaunchMs = 0;
+var activeSpinRAF = null;
+var activeSpinTimeout = null;
+var activeSpinCheckComplete = null;
+var pointerTickTimer = null;
+var wheelSlicesDirty = true;
+var hubDirty = true;
 
 var state = {
   mode:'single',          
   title:'Your Brand Prize Draw',
   entries:[],             
   prizes:[],              
+  depleted:[],
   baseline: null,
-  options:{remove:true, distribute:true, colorByPrize:false, sound:true, confetti:true, duration:6, glow:true, maxSlices:DEFAULT_MAX_SLICES},
+  options:{remove:true, distribute:true, colorByPrize:false, sound:true, confetti:true, duration:6, glow:true, maxSlices:DEFAULT_MAX_SLICES, lowStockThreshold:DEFAULT_LOW_STOCK_THRESHOLD},
   history:[],
   theme: null,
   logos: { hdr: null, center: null },
   customThemes: []
 };
 
-var flow = {stage:1, person:null};
+var flow = {stage:1, person:null, lastStep1SpinId:null};
 var hdrLogoScale = 1;
 var centerLogoScale = 1;
 var segTextCustom = false;
@@ -1806,6 +2024,12 @@ var segments = [];
 var rotation = 0;       
 var spinning = false;
 
+var wheelGlowEl = document.querySelector('.wheel-glow');
+var stageEl = document.querySelector('.stage');
+var pointerEl = document.getElementById('wheelPointer');
+var reducedMotionQuery = window.matchMedia ? window.matchMedia('(prefers-reduced-motion: reduce)') : null;
+function isReducedMotion(){ return !!(reducedMotionQuery && reducedMotionQuery.matches); }
+
 var logoImg = new Image();
 var centerLogoImg = new Image();
 var logoReady = false;
@@ -1814,23 +2038,15 @@ var stageLogoAvailable = false;
 
 logoImg.onload = function(){ logoReady = true; draw(); };
 logoImg.onerror = function(){ logoReady = false; draw(); };
-centerLogoImg.onload = function(){ centerLogoReady = true; draw(); };
-centerLogoImg.onerror = function(){
-  var curSrc = centerLogoImg.getAttribute('src') || '';
-  if (curSrc.indexOf('/center-logo.png') !== -1 && curSrc.indexOf('alt_tried=1') === -1) {
-    var altSrc = curSrc.replace('/center-logo.png', '/centre-logo.png');
-    centerLogoImg.src = altSrc + (altSrc.indexOf('?') === -1 ? '?alt_tried=1' : '&alt_tried=1');
-    return;
-  }
-  centerLogoReady = false;
-  draw();
-};
+centerLogoImg.onload = function(){ centerLogoReady = true; hubDirty = true; draw(); };
+centerLogoImg.onerror = function(){ centerLogoReady = false; hubDirty = true; draw(); };
 
 function $(id){ return document.getElementById(id); }
 function esc(s){ return String(s).replace(/[&<>"']/g, function(c){
   return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c];
 }); }
 
+var toastTimer = null;
 function showToast(msg) {
     var t = document.getElementById('toastAlert');
     if(!t) {
@@ -1840,7 +2056,17 @@ function showToast(msg) {
     }
     t.textContent = msg;
     t.classList.add('show');
-    setTimeout(function(){ t.classList.remove('show'); }, 3000);
+    if (toastTimer) clearTimeout(toastTimer);
+    toastTimer = setTimeout(function(){ t.classList.remove('show'); toastTimer = null; }, 3200);
+}
+
+function closeConfirmModal() {
+    var overlay = $('confirmOverlay');
+    if (overlay) overlay.classList.remove('show');
+    var yesBtn = $('btnConfirmYes');
+    var noBtn = $('btnConfirmNo');
+    if (yesBtn) yesBtn.onclick = null;
+    if (noBtn) noBtn.onclick = null;
 }
 
 function askConfirm(msg, onYes, opts) {
@@ -1855,13 +2081,146 @@ function askConfirm(msg, onYes, opts) {
       disc.classList.remove('show');
     }
     var yesBtn = $('btnConfirmYes');
+    var noBtn = $('btnConfirmNo');
     yesBtn.textContent = opts.yesLabel || 'Yes';
     yesBtn.className = opts.danger ? 'btn danger' : 'btn primary';
 
     $('confirmOverlay').classList.add('show');
-    yesBtn.onclick = function() { $('confirmOverlay').classList.remove('show'); onYes(); };
-    $('btnConfirmNo').onclick = function() { $('confirmOverlay').classList.remove('show'); };
+    yesBtn.onclick = function() {
+      closeConfirmModal();
+      if (typeof onYes === 'function') onYes();
+    };
+    noBtn.onclick = closeConfirmModal;
 }
+
+/* ============================================================
+   Kiosk Stability: Diagnostics Ring Buffer & Screen Wake Lock
+   ============================================================ */
+var MAX_DIAGNOSTICS = 50;
+window.__spinWheelDiagnostics = window.__spinWheelDiagnostics || [];
+function recordDiagnostic(kind, detail) {
+  try {
+    window.__spinWheelDiagnostics.push({
+      ts: new Date().toISOString(),
+      kind: String(kind || 'info'),
+      detail: String(detail || '')
+    });
+    if (window.__spinWheelDiagnostics.length > MAX_DIAGNOSTICS) {
+      window.__spinWheelDiagnostics.splice(0, window.__spinWheelDiagnostics.length - MAX_DIAGNOSTICS);
+    }
+  } catch(e){}
+}
+
+function recoverFromSpinError(reason) {
+  recordDiagnostic('spin-recovery', reason);
+  if (activeSpinRAF) { cancelAnimationFrame(activeSpinRAF); activeSpinRAF = null; }
+  if (activeSpinTimeout) { clearTimeout(activeSpinTimeout); activeSpinTimeout = null; }
+  activeSpinCheckComplete = null;
+  if (spinning) {
+    spinning = false;
+    var btn = $('btnSpin');
+    if (btn) btn.disabled = activeList().length < 1;
+    showToast('Recovered safely from an unexpected error.');
+  }
+}
+
+window.addEventListener('error', function(ev){
+  var msg = (ev && ev.message) ? ev.message : 'Unknown error';
+  recordDiagnostic('error', msg);
+  if (spinning) recoverFromSpinError(msg);
+});
+window.addEventListener('unhandledrejection', function(ev){
+  var reason = (ev && ev.reason) ? (ev.reason.message || String(ev.reason)) : 'Unhandled rejection';
+  recordDiagnostic('unhandledrejection', reason);
+  if (spinning) recoverFromSpinError(reason);
+});
+
+var wakeLockSentinel = null;
+var wakeLockActive = false;
+function acquireWakeLock() {
+  if (!navigator.wakeLock || !navigator.wakeLock.request || document.visibilityState !== 'visible') return;
+  if (wakeLockSentinel && !wakeLockSentinel.released) return;
+  try {
+    navigator.wakeLock.request('screen').then(function(sentinel){
+      wakeLockSentinel = sentinel;
+      wakeLockActive = true;
+      updateTelemetryUI();
+      sentinel.addEventListener('release', function(){
+        wakeLockActive = false;
+        wakeLockSentinel = null;
+        updateTelemetryUI();
+        if (document.visibilityState === 'visible' && document.body.classList.contains('present')) {
+          setTimeout(acquireWakeLock, 600);
+        }
+      });
+    }).catch(function(err){
+      wakeLockActive = false;
+      recordDiagnostic('wakelock', err && err.name ? err.name : 'unavailable');
+      updateTelemetryUI();
+    });
+  } catch(e){
+    wakeLockActive = false;
+  }
+}
+
+function releaseWakeLock() {
+  if (wakeLockSentinel) {
+    try { wakeLockSentinel.release().catch(function(){}); } catch(e){}
+    wakeLockSentinel = null;
+  }
+  wakeLockActive = false;
+  updateTelemetryUI();
+}
+
+/* Re-acquire wake lock automatically when returning to the kiosk tab or on first gesture */
+document.addEventListener('pointerdown', function(){
+  if (!wakeLockActive) acquireWakeLock();
+}, { passive: true });
+
+/* ============================================================
+   Live Telemetry Pill & Present Corner Status Dot ([OP-2])
+   ============================================================ */
+function updateTelemetryUI() {
+  var pill = $('telemetryPill');
+  var textEl = $('telemetryText');
+  var wakeEl = $('telemetryWake');
+  var pinEl = $('telemetryPin');
+  var idEl = $('telemetryKioskId');
+  var dot = $('presentStatusDot');
+
+  var online = navigator.onLine !== false;
+  var stateClass = '';
+  var label = 'Local';
+  if (!online) {
+    stateClass = 'offline';
+    label = (cloudSyncMode === 'cached' || cloudSyncMode === 'online') ? 'Offline Queue' : 'Offline';
+  } else if (cloudSyncMode === 'online') {
+    stateClass = 'online';
+    label = 'Cloud Synced';
+  } else if (cloudSyncMode === 'cached') {
+    stateClass = 'cached';
+    label = 'Offline Queue';
+  } else {
+    stateClass = '';
+    label = 'Local';
+  }
+
+  if (pill) {
+    pill.className = 'telemetry-pill' + (stateClass ? (' ' + stateClass) : '');
+    var devShort = getOrCreateDeviceId().slice(-4).toUpperCase();
+    pill.title = 'Status: ' + label +
+      ' · Wake Lock: ' + (wakeLockActive ? 'On' : 'Off') +
+      ' · PIN: ' + (hasKioskPin() ? 'Locked' : 'Unlocked') +
+      ' · Kiosk #' + devShort;
+  }
+  if (textEl) textEl.textContent = label;
+  if (wakeEl) wakeEl.style.display = wakeLockActive ? 'inline' : 'none';
+  if (pinEl) pinEl.style.display = hasKioskPin() ? 'inline' : 'none';
+  if (idEl) idEl.textContent = '#' + getOrCreateDeviceId().slice(-4).toUpperCase();
+  if (dot) dot.className = 'present-status-dot' + (stateClass ? (' ' + stateClass) : '');
+}
+window.addEventListener('online', updateTelemetryUI);
+window.addEventListener('offline', updateTelemetryUI);
 
 /* Cryptographically Secure Random Helpers (Unbiased Rejection Sampling) */
 function randInt(n){
@@ -1901,8 +2260,82 @@ function pickWeightedEntry(list){
 }
 
 /* ============================================================
-   Triple-Redundant Persistence: Dedicated Key + URL Hash + IndexedDB
+   Atomic Checksummed Persistence: Double-Buffered LS + Hash + IDB + Pending Spin Journal
    ============================================================ */
+
+function fnv1a32(str){
+  var h = 0x811c9dc5;
+  var s = String(str || '');
+  for (var i = 0; i < s.length; i++){
+    h ^= s.charCodeAt(i);
+    h = Math.imul(h, 0x01000193);
+  }
+  return (h >>> 0).toString(16).padStart(8, '0');
+}
+
+function wrapEnvelope(data, seq, updatedAt){
+  var jsonData = JSON.stringify(data);
+  return {
+    v: STATE_SCHEMA_VERSION,
+    seq: Number(seq) || 0,
+    updatedAt: Number(updatedAt) || Date.now(),
+    checksum: fnv1a32(jsonData),
+    data: data
+  };
+}
+
+function unwrapEnvelope(rawOrObj){
+  if (!rawOrObj) return null;
+  var obj = rawOrObj;
+  if (typeof rawOrObj === 'string') {
+    try { obj = JSON.parse(rawOrObj); } catch(e){ return null; }
+  }
+  if (!obj || typeof obj !== 'object') return null;
+
+  if (obj.v === STATE_SCHEMA_VERSION && obj.data && typeof obj.data === 'object') {
+    try {
+      var expected = fnv1a32(JSON.stringify(obj.data));
+      if (obj.checksum !== expected) {
+        recordDiagnostic('checksum-mismatch', 'Rejected corrupted v2 state envelope');
+        return null;
+      }
+      return {
+        v: STATE_SCHEMA_VERSION,
+        seq: Number(obj.seq) || 0,
+        updatedAt: Number(obj.updatedAt) || Number(obj.data.updatedAt) || 0,
+        data: obj.data
+      };
+    } catch(e){ return null; }
+  }
+
+  // Legacy v1 un-enveloped snapshot compatibility
+  if (Array.isArray(obj.entries) || typeof obj.title === 'string' || typeof obj.spinId === 'string') {
+    return {
+      v: 1,
+      seq: Number(obj.seq) || 0,
+      updatedAt: Number(obj.updatedAt) || 0,
+      data: obj
+    };
+  }
+  return null;
+}
+
+function safeParseStorage(key){
+  try {
+    var raw = localStorage.getItem(key);
+    if (!raw) return null;
+    return unwrapEnvelope(raw);
+  } catch(e){ return null; }
+}
+
+function isEnvelopeNewer(candidate, current){
+  if (!candidate) return false;
+  if (!current) return true;
+  var cSeq = Number(candidate.seq) || 0;
+  var curSeq = Number(current.seq) || 0;
+  if (cSeq !== curSeq) return cSeq > curSeq;
+  return (Number(candidate.updatedAt) || 0) > (Number(current.updatedAt) || 0);
+}
 
 var idbPromise = null;
 function getIDB(){
@@ -1934,6 +2367,18 @@ function idbWrite(key, val){
   });
 }
 
+function idbDelete(key){
+  var p = getIDB();
+  if (!p) return;
+  p.then(function(db){
+    if (!db) return;
+    try {
+      var tx = db.transaction('kv', 'readwrite');
+      tx.objectStore('kv').delete(key);
+    } catch(e){}
+  });
+}
+
 function idbRead(key, cb){
   var p = getIDB();
   if (!p) { cb(null); return; }
@@ -1957,7 +2402,8 @@ function writeHashSnapshot(){
       e: state.entries.map(function(x){ return [x.label, x.qty]; }),
       p: state.prizes.map(function(x){ return [x.label, x.qty]; }),
       o: [state.options.remove ? 1 : 0, state.options.distribute ? 1 : 0, state.options.maxSlices || 60],
-      ts: Date.now()
+      seq: stateSeq,
+      ts: stateUpdatedAt || Date.now()
     };
     var encoded = encodeURIComponent(JSON.stringify(payload));
     if (encoded.length < 6000 && window.history && window.history.replaceState) {
@@ -1974,12 +2420,17 @@ function readHashSnapshot(){
     var obj = JSON.parse(raw);
     if (!obj || !Array.isArray(obj.e)) return null;
     return {
-      title: obj.t || 'Prize Draw',
-      mode: obj.m === 'two' ? 'two' : 'single',
-      themeId: obj.th || null,
-      entries: obj.e.map(function(pair){ return {label: String(pair[0]), qty: Math.max(1, parseInt(pair[1], 10) || 1)}; }),
-      prizes: Array.isArray(obj.p) ? obj.p.map(function(pair){ return {label: String(pair[0]), qty: Math.max(1, parseInt(pair[1], 10) || 1)}; }) : [],
-      updatedAt: obj.ts || 0
+      v: STATE_SCHEMA_VERSION,
+      seq: Number(obj.seq) || 0,
+      updatedAt: Number(obj.ts) || 0,
+      data: {
+        title: obj.t || 'Prize Draw',
+        mode: obj.m === 'two' ? 'two' : 'single',
+        themeId: obj.th || null,
+        entries: obj.e.map(function(pair){ return {label: String(pair[0]), qty: Math.max(1, parseInt(pair[1], 10) || 1)}; }),
+        prizes: Array.isArray(obj.p) ? obj.p.map(function(pair){ return {label: String(pair[0]), qty: Math.max(1, parseInt(pair[1], 10) || 1)}; }) : [],
+        updatedAt: Number(obj.ts) || 0
+      }
     };
   } catch(e){ return null; }
 }
@@ -2155,35 +2606,92 @@ function flashSaveIndicator(){
   el.textContent = '● Saved ' + now.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit', second:'2-digit'}) + suffix;
 }
 
+function cleanDepleted(arr){
+  if (!Array.isArray(arr)) return [];
+  var out = [], seen = {};
+  for (var i = 0; i < arr.length; i++){
+    var item = arr[i];
+    if (!item || !item.label) continue;
+    var listKey = (item.list === 'prizes') ? 'prizes' : 'entries';
+    var lbl = String(item.label).trim();
+    if (!lbl) continue;
+    var k = listKey + '::' + lbl;
+    if (seen[k]) continue;
+    seen[k] = true;
+    out.push({ label: lbl, list: listKey, depletedAt: item.depletedAt || new Date().toISOString() });
+  }
+  return out;
+}
+
+function markDepleted(listKey, label){
+  if (!label) return;
+  var lk = (listKey === 'prizes') ? 'prizes' : 'entries';
+  if (!Array.isArray(state.depleted)) state.depleted = [];
+  for (var i = 0; i < state.depleted.length; i++){
+    if (state.depleted[i].list === lk && state.depleted[i].label === label) {
+      state.depleted[i].depletedAt = new Date().toISOString();
+      return;
+    }
+  }
+  state.depleted.unshift({ label: String(label), list: lk, depletedAt: new Date().toISOString() });
+}
+
+function unmarkDepleted(listKey, label){
+  if (!Array.isArray(state.depleted) || !label) return;
+  var lk = (listKey === 'prizes') ? 'prizes' : 'entries';
+  state.depleted = state.depleted.filter(function(d){
+    return !(d && d.list === lk && d.label === label);
+  });
+}
+
+function writePendingSpin(pending){
+  if (!pending || !pending.spinId) return;
+  var env = wrapEnvelope(pending, stateSeq + 1, Date.now());
+  try { localStorage.setItem(PENDING_SPIN_KEY, JSON.stringify(env)); } catch(e){}
+  idbWrite('pendingSpin', env);
+}
+
+function clearPendingSpin(){
+  try { localStorage.removeItem(PENDING_SPIN_KEY); } catch(e){}
+  idbDelete('pendingSpin');
+}
+
 function buildKioskBackupPayload(nowTs){
   return {
     deviceId: getOrCreateDeviceId(),
+    seq: stateSeq,
     title: state.title,
     mode: state.mode,
     entries: cleanList(state.entries),
     prizes: cleanList(state.prizes),
+    depleted: cleanDepleted(state.depleted),
     baseline: state.baseline || null,
     options: state.options,
     themeId: (state.theme && state.theme.id) ? state.theme.id : defaultThemeId(),
     history: (state.history || []).slice(-500),
-    updatedAt: nowTs || Date.now()
+    updatedAt: nowTs || stateUpdatedAt || Date.now()
   };
 }
 
 function save(immediateCloud){
   var nowTs = Date.now();
+  stateSeq = (Number(stateSeq) || 0) + 1;
+  stateUpdatedAt = nowTs;
+
   // 1. Always save the ultra-lightweight Live Inventory first (Guaranteed < 2KB so it never hits quota)
   var liveInv = {
     title: state.title,
     mode: state.mode,
     entries: state.entries,
     prizes: state.prizes,
+    depleted: cleanDepleted(state.depleted),
     options: state.options,
     themeId: (state.theme && state.theme.id) ? state.theme.id : defaultThemeId(),
     updatedAt: nowTs
   };
+  var liveEnvStr = JSON.stringify(wrapEnvelope(liveInv, stateSeq, nowTs));
   try {
-    localStorage.setItem(LIVE_INV_KEY, JSON.stringify(liveInv));
+    localStorage.setItem(LIVE_INV_KEY, liveEnvStr);
     if (state.theme && state.theme.id) {
       localStorage.setItem(LAST_THEME_KEY, state.theme.id);
     }
@@ -2192,12 +2700,13 @@ function save(immediateCloud){
   // 2. Mirror live counts into URL hash (survives even if localStorage is disabled or cleared)
   writeHashSnapshot();
 
-  // 3. Save full state (with clean URL paths and history capped at 1,000 to prevent bloat)
+  // 3. Save full state inside a checksummed v2 envelope (double-buffered :bak then primary)
   var slimState = {
     mode: state.mode,
     title: state.title,
     entries: state.entries,
     prizes: state.prizes,
+    depleted: cleanDepleted(state.depleted),
     baseline: state.baseline,
     options: state.options,
     history: (state.history || []).slice(-1000),
@@ -2209,26 +2718,36 @@ function save(immediateCloud){
     customThemes: (state.customThemes || []).map(stripAssetBankLogosFromTheme),
     updatedAt: nowTs
   };
+  var fullEnv = wrapEnvelope(slimState, stateSeq, nowTs);
+  var fullEnvStr = JSON.stringify(fullEnv);
 
-  idbWrite('fullState', slimState);
+  idbWrite('fullState', fullEnv);
   if (window.__spinWheelCloud && window.__spinWheelCloud.syncKioskBackup) {
     window.__spinWheelCloud.syncKioskBackup(immediateCloud === true);
   }
   flashSaveIndicator();
   updateBaselineUI();
 
+  // Double-buffered atomic write: write backup slot first, then commit primary slot
+  try { localStorage.setItem(STORE_BAK_KEY, fullEnvStr); } catch(e){}
   try {
-    localStorage.setItem(STORE_KEY, JSON.stringify(slimState));
+    localStorage.setItem(STORE_KEY, fullEnvStr);
     return true;
   } catch(e){
     return false;
   }
 }
 
-/* Flush state if tab is hidden or about to unload */
+/* Flush state if tab is hidden or about to unload; manage Wake Lock, confetti, and stalled spins */
 window.addEventListener('pagehide', function(){ save(true); });
 document.addEventListener('visibilitychange', function(){
-  if (document.visibilityState === 'hidden') save(true);
+  if (document.visibilityState === 'hidden') {
+    save(true);
+    if (typeof stopConfetti === 'function') stopConfetti();
+  } else if (document.visibilityState === 'visible') {
+    acquireWakeLock();
+    if (typeof activeSpinCheckComplete === 'function') activeSpinCheckComplete();
+  }
 });
 
 function relLum(hex){
@@ -2246,9 +2765,9 @@ function contrastRatio(hex1, hex2){
   var l1 = relLum(hex1), l2 = relLum(hex2);
   return (Math.max(l1, l2) + 0.05) / (Math.min(l1, l2) + 0.05);
 }
-function readableInk(c){
-  var bg = (state.theme && state.theme.bgPanel) ? state.theme.bgPanel : '#141414';
-  var txt = (state.theme && state.theme.textMain) ? state.theme.textMain : '#ffffff';
+function readableInk(c, bgOverride, txtOverride){
+  var bg = bgOverride || ((state.theme && state.theme.bgPanel) ? state.theme.bgPanel : '#141414');
+  var txt = txtOverride || ((state.theme && state.theme.textMain) ? state.theme.textMain : '#ffffff');
   return contrastRatio(c, bg) >= 3.5 ? c : txt;
 }
 
@@ -2258,61 +2777,94 @@ function cleanList(arr){
             .map(function(e){ return {label:String(e.label), qty:Math.max(1, Math.min(MAX_ITEM_QTY, parseInt(e.qty,10)||1))}; });
 }
 
+function sanitizeOptionsInPlace(){
+  state.options.maxSlices = Math.max(2, Math.min(300, parseInt(state.options.maxSlices, 10) || DEFAULT_MAX_SLICES));
+  var lst = parseInt(state.options.lowStockThreshold, 10);
+  state.options.lowStockThreshold = isNaN(lst) ? DEFAULT_LOW_STOCK_THRESHOLD : Math.max(0, Math.min(1000, lst));
+  var dur = parseInt(state.options.duration, 10);
+  state.options.duration = isNaN(dur) ? 6 : Math.max(3, Math.min(15, dur));
+}
+
+function applyRecoveredSnapshot(o, seq, updatedAt){
+  if (!o || typeof o !== 'object') return;
+  if (typeof o.title === 'string') state.title = o.title;
+  if (o.mode === 'two' || o.mode === 'single') state.mode = o.mode;
+  if (Array.isArray(o.entries)) state.entries = cleanList(o.entries);
+  if (Array.isArray(o.prizes)) state.prizes = cleanList(o.prizes);
+  if (Array.isArray(o.depleted)) state.depleted = cleanDepleted(o.depleted);
+  if (o.baseline) state.baseline = o.baseline;
+  if (o.options && typeof o.options === 'object') {
+    for (var k in state.options) {
+      if (o.options[k] !== undefined) state.options[k] = o.options[k];
+    }
+  }
+  if (Array.isArray(o.history)) state.history = o.history;
+  if (Array.isArray(o.customThemes)) {
+    state.customThemes = o.customThemes
+      .map(stripAssetBankLogosFromTheme)
+      .filter(function(ct){
+        if (!ct || !ct.id) return false;
+        // Prune local overrides of folder themes that were deleted from ./themes/index.json
+        if (ct.isFolderOverride && !isBuiltinId(ct.id)) return false;
+        return true;
+      });
+  }
+  sanitizeOptionsInPlace();
+  if (Number(seq) > stateSeq) stateSeq = Number(seq);
+  if (Number(updatedAt) > stateUpdatedAt) stateUpdatedAt = Number(updatedAt);
+}
+
 function load(){
   try {
     if (!BUILTIN_THEMES.length) BUILTIN_THEMES = getBuiltinThemes();
 
-    // Free up space from old bloated v2 key if present
-    var raw = localStorage.getItem(STORE_KEY);
+    // Independently parse & verify every local storage layer so corruption in one never aborts recovery
+    var primaryRaw = null;
+    try { primaryRaw = localStorage.getItem(STORE_KEY); } catch(e){}
+    var primaryEnv = primaryRaw ? unwrapEnvelope(primaryRaw) : null;
+    var primaryCorrupted = !!(primaryRaw && !primaryEnv);
+
+    var backupEnv = safeParseStorage(STORE_BAK_KEY);
+    var legacyEnv = null;
     var migratedFromV2 = false;
-    if (!raw) {
-      raw = localStorage.getItem(LEGACY_STORE_KEY);
-      if (raw) migratedFromV2 = true;
+    if (!primaryEnv && !backupEnv) {
+      legacyEnv = safeParseStorage(LEGACY_STORE_KEY);
+      if (legacyEnv) migratedFromV2 = true;
     }
 
-    var liveRaw = null;
-    try { liveRaw = localStorage.getItem(LIVE_INV_KEY); } catch(e){}
-    var liveObj = liveRaw ? JSON.parse(liveRaw) : null;
-    var hashObj = readHashSnapshot();
+    var liveEnv = safeParseStorage(LIVE_INV_KEY);
+    var hashEnv = readHashSnapshot();
 
-    var o = raw ? JSON.parse(raw) : null;
-    if (!o && !liveObj && !hashObj) return false;
+    // Pick highest valid (seq, updatedAt) full-state snapshot
+    var bestFull = null;
+    [primaryEnv, backupEnv, legacyEnv].forEach(function(cand){
+      if (cand && cand.data && isEnvelopeNewer(cand, bestFull)) bestFull = cand;
+    });
 
-    if (o) {
-      if (typeof o.title === 'string') state.title = o.title;
-      if (o.mode === 'two' || o.mode === 'single') state.mode = o.mode;
-      state.entries = cleanList(o.entries);
-      state.prizes  = cleanList(o.prizes);
-      if (o.baseline) state.baseline = o.baseline;
-      if (o.options) for (var k in state.options) if (o.options[k] !== undefined) state.options[k] = o.options[k];
-      if (Array.isArray(o.history)) state.history = o.history;
-      if (Array.isArray(o.customThemes)) {
-        state.customThemes = o.customThemes
-          .map(stripAssetBankLogosFromTheme)
-          .filter(function(ct){
-            if (!ct || !ct.id) return false;
-            // Prune local overrides of folder themes that were deleted from ./themes/index.json
-            if (ct.isFolderOverride && !isBuiltinId(ct.id)) return false;
-            return true;
-          });
-      }
+    if (!bestFull && !liveEnv && !hashEnv) return false;
+
+    if (bestFull) {
+      applyRecoveredSnapshot(bestFull.data, bestFull.seq, bestFull.updatedAt);
     }
 
-    // If the dedicated Live Inventory key is newer or full store failed, overlay the latest live counts
-    if (liveObj && Array.isArray(liveObj.entries)) {
-      var oTs = (o && o.updatedAt) ? o.updatedAt : 0;
-      if (!o || (liveObj.updatedAt || 0) >= oTs) {
-        state.entries = cleanList(liveObj.entries);
-        state.prizes  = cleanList(liveObj.prizes);
-        if (liveObj.title) state.title = liveObj.title;
-        if (liveObj.mode === 'two' || liveObj.mode === 'single') state.mode = liveObj.mode;
-        if (liveObj.options) for (var k2 in state.options) if (liveObj.options[k2] !== undefined) state.options[k2] = liveObj.options[k2];
+    // Overlay newer live inventory or URL hash snapshot if it outranks full store
+    var bestInv = null;
+    if (liveEnv && liveEnv.data && Array.isArray(liveEnv.data.entries)) bestInv = liveEnv;
+    if (hashEnv && hashEnv.data && Array.isArray(hashEnv.data.entries) && isEnvelopeNewer(hashEnv, bestInv)) {
+      bestInv = hashEnv;
+    }
+    if (bestInv && (!bestFull || isEnvelopeNewer(bestInv, bestFull))) {
+      var ld = bestInv.data;
+      state.entries = cleanList(ld.entries);
+      state.prizes  = cleanList(ld.prizes);
+      if (Array.isArray(ld.depleted)) state.depleted = cleanDepleted(ld.depleted);
+      if (ld.title) state.title = ld.title;
+      if (ld.mode === 'two' || ld.mode === 'single') state.mode = ld.mode;
+      if (ld.options) {
+        for (var k2 in state.options) if (ld.options[k2] !== undefined) state.options[k2] = ld.options[k2];
       }
-    } else if (!o && hashObj) {
-      state.entries = cleanList(hashObj.entries);
-      state.prizes  = cleanList(hashObj.prizes);
-      state.title   = hashObj.title;
-      state.mode    = hashObj.mode;
+      if (bestInv.seq > stateSeq) stateSeq = bestInv.seq;
+      if (bestInv.updatedAt > stateUpdatedAt) stateUpdatedAt = bestInv.updatedAt;
     }
 
     // Load baseline if stored separately
@@ -2321,14 +2873,16 @@ function load(){
       if (rawBase && !state.baseline) state.baseline = JSON.parse(rawBase);
     } catch(e){}
 
-    state.options.maxSlices = Math.max(2, Math.min(300, parseInt(state.options.maxSlices, 10) || DEFAULT_MAX_SLICES));
+    sanitizeOptionsInPlace();
     if (migratedFromV2) state.options.remove = true;
 
     var candidateThemeId = null;
     try { candidateThemeId = localStorage.getItem(LAST_THEME_KEY); } catch(e){}
-    if (!candidateThemeId && liveObj && liveObj.themeId) candidateThemeId = liveObj.themeId;
-    if (!candidateThemeId && hashObj && hashObj.themeId) candidateThemeId = hashObj.themeId;
-    if (!candidateThemeId && o && o.theme && o.theme.id) candidateThemeId = o.theme.id;
+    if (!candidateThemeId && liveEnv && liveEnv.data && liveEnv.data.themeId) candidateThemeId = liveEnv.data.themeId;
+    if (!candidateThemeId && hashEnv && hashEnv.data && hashEnv.data.themeId) candidateThemeId = hashEnv.data.themeId;
+    if (!candidateThemeId && bestFull && bestFull.data && bestFull.data.theme && bestFull.data.theme.id) {
+      candidateThemeId = bestFull.data.theme.id;
+    }
 
     // Only resolve against active ./themes/index.json entries or valid custom themes;
     // if a folder theme was deleted on GitHub, fall back cleanly to BUILTIN_THEMES[0]
@@ -2343,12 +2897,18 @@ function load(){
       writeHashSnapshot();
     }
 
-    if (migratedFromV2) {
+    if (primaryCorrupted) {
+      recordDiagnostic('recovery', 'Healed corrupted primary localStorage key from atomic backup');
+      save(false);
+    } else if (migratedFromV2) {
       try { localStorage.removeItem(LEGACY_STORE_KEY); } catch(e){}
-      save();
+      save(false);
     }
     return true;
-  } catch(e){ return false; }
+  } catch(e){
+    recordDiagnostic('load-error', e && e.message ? e.message : String(e));
+    return false;
+  }
 }
 
 /* ============================================================
@@ -2368,6 +2928,7 @@ function lockCurrentAsBaseline(silent){
 }
 
 function resetCountsToBaseline(){
+  if (spinning) { showToast('Wait for the current spin to finish.'); return; }
   if (!state.baseline || !Array.isArray(state.baseline.entries) || !state.baseline.entries.length) {
     showToast('No starting baseline locked yet.');
     return;
@@ -2375,14 +2936,18 @@ function resetCountsToBaseline(){
   askConfirm('Reset all wheel quantities back to your locked starting baseline?', function(){
     state.entries = cleanList(state.baseline.entries);
     state.prizes  = cleanList(state.baseline.prizes);
-    flow.stage = 1; flow.person = null;
-    refresh();
+    state.depleted = [];
+    flow.stage = 1; flow.person = null; flow.lastStep1SpinId = null;
+    lastWinningIdx = -1;
+    clearPendingSpin();
+    refresh(true);
     renderThemePickerCards();
     showToast('Inventory reset to starting baseline.');
   });
 }
 
 function promptStartFresh(){
+  if (spinning) { showToast('Wait for the current spin to finish.'); return; }
   askConfirm(
     'Start fresh and reset the wheel to default Prize 1–5 options?',
     function(){
@@ -2390,11 +2955,15 @@ function promptStartFresh(){
       state.title = 'Prize Draw';
       state.entries = PRESET.map(function(p){ return {label:p.label, qty:p.qty}; });
       state.prizes = [];
+      state.depleted = [];
       state.history = [];
       state.baseline = null;
       flow.stage = 1;
       flow.person = null;
+      flow.lastStep1SpinId = null;
       rotation = 0;
+      lastWinningIdx = -1;
+      clearPendingSpin();
 
       try {
         localStorage.removeItem(BASELINE_KEY);
@@ -2403,7 +2972,7 @@ function promptStartFresh(){
 
       $('titleInput').value = state.title;
       $('presentTitle').textContent = state.title;
-      refresh();
+      refresh(true);
       renderHistory();
       updateBaselineUI();
       renderThemePickerCards();
@@ -2459,6 +3028,153 @@ $('btnLockBaseline').addEventListener('click', function(){ lockCurrentAsBaseline
 $('btnResetToBaseline').addEventListener('click', resetCountsToBaseline);
 $('btnPickerResetBaseline').addEventListener('click', resetCountsToBaseline);
 $('btnPickerStartFresh').addEventListener('click', promptStartFresh);
+
+/* ============================================================
+   Operator Kiosk PIN Lock ([OP-1])
+   ============================================================ */
+var kioskPinHash = null;
+var pinEntryBuffer = '';
+var pinSuccessCallback = null;
+
+function hashPin(pin){
+  return 'pin2_' + fnv1a32('spinwheel-kiosk-salt-v1::' + String(pin));
+}
+
+function loadKioskPin(){
+  try {
+    var h = localStorage.getItem(PIN_KEY);
+    if (h && typeof h === 'string' && h.indexOf('pin2_') === 0) kioskPinHash = h;
+  } catch(e){}
+  updatePinStatusUI();
+}
+
+function hasKioskPin(){
+  return !!(kioskPinHash && kioskPinHash.length > 5);
+}
+
+function setKioskPin(pinStr){
+  if (!/^\d{4}$/.test(pinStr)) {
+    showToast('PIN must be exactly 4 digits (0–9).');
+    return false;
+  }
+  kioskPinHash = hashPin(pinStr);
+  try { localStorage.setItem(PIN_KEY, kioskPinHash); } catch(e){}
+  idbWrite('kioskPinHash', kioskPinHash);
+  updatePinStatusUI();
+  updateTelemetryUI();
+  showToast('Kiosk PIN lock enabled for Present Mode.');
+  return true;
+}
+
+function clearKioskPin(){
+  kioskPinHash = null;
+  operatorPresentUnlocked = false;
+  try { localStorage.removeItem(PIN_KEY); } catch(e){}
+  idbDelete('kioskPinHash');
+  updatePinStatusUI();
+  updateTelemetryUI();
+  showToast('Kiosk PIN lock removed.');
+}
+
+function updatePinStatusUI(){
+  var badge = $('pinStatusBadge');
+  var btnClear = $('btnClearPin');
+  var btnSet = $('btnSetPin');
+  var locked = hasKioskPin();
+  if (badge) {
+    badge.className = 'sync-pill' + (locked ? ' online' : '');
+    badge.textContent = locked ? '🔒 PIN Active' : 'Unlocked';
+  }
+  if (btnClear) btnClear.style.display = locked ? 'inline-flex' : 'none';
+  if (btnSet) btnSet.textContent = locked ? 'Change PIN' : 'Set PIN';
+}
+
+function renderPinDots(){
+  var dots = document.querySelectorAll('#pinDots .pin-dot');
+  for (var i = 0; i < dots.length; i++){
+    dots[i].classList.toggle('filled', i < pinEntryBuffer.length);
+  }
+}
+
+function closePinModal(){
+  pinEntryBuffer = '';
+  pinSuccessCallback = null;
+  renderPinDots();
+  var err = $('pinErrMsg');
+  if (err) err.textContent = '';
+  var ov = $('pinOverlay');
+  if (ov) ov.classList.remove('show');
+}
+
+function requireOperatorPin(onUnlock, subText){
+  if (!hasKioskPin() || !document.body.classList.contains('present') || operatorPresentUnlocked) {
+    if (typeof onUnlock === 'function') onUnlock();
+    return;
+  }
+  pinEntryBuffer = '';
+  pinSuccessCallback = onUnlock;
+  renderPinDots();
+  if ($('pinErrMsg')) $('pinErrMsg').textContent = '';
+  if ($('pinModalSub')) $('pinModalSub').textContent = subText || 'Enter your 4-digit kiosk PIN to unlock operator controls.';
+  $('pinOverlay').classList.add('show');
+}
+
+function handlePinKey(key){
+  if (!$('pinOverlay').classList.contains('show')) return;
+  if ($('pinErrMsg')) $('pinErrMsg').textContent = '';
+  if (key === 'clear') {
+    pinEntryBuffer = '';
+    renderPinDots();
+    return;
+  }
+  if (key === 'back') {
+    pinEntryBuffer = pinEntryBuffer.slice(0, -1);
+    renderPinDots();
+    return;
+  }
+  if (/^\d$/.test(key) && pinEntryBuffer.length < 4) {
+    pinEntryBuffer += key;
+    renderPinDots();
+    if (pinEntryBuffer.length === 4) {
+      if (hashPin(pinEntryBuffer) === kioskPinHash) {
+        var cb = pinSuccessCallback;
+        operatorPresentUnlocked = true;
+        closePinModal();
+        if (typeof cb === 'function') cb();
+      } else {
+        if ($('pinErrMsg')) $('pinErrMsg').textContent = 'Incorrect PIN — try again';
+        pinEntryBuffer = '';
+        setTimeout(renderPinDots, 180);
+      }
+    }
+  }
+}
+
+$('pinPad').addEventListener('click', function(e){
+  e.stopPropagation();
+  var btn = e.target.closest ? e.target.closest('.pin-key') : null;
+  if (btn) handlePinKey(btn.getAttribute('data-k'));
+});
+$('btnPinCancel').addEventListener('click', function(e){
+  e.stopPropagation();
+  closePinModal();
+});
+$('pinOverlay').addEventListener('click', function(e){
+  e.stopPropagation();
+  if (e.target === this) closePinModal();
+});
+$('btnSetPin').addEventListener('click', function(){
+  var inp = $('pinConfigInput');
+  var val = (inp.value || '').trim();
+  if (setKioskPin(val)) inp.value = '';
+});
+$('pinConfigInput').addEventListener('keydown', function(e){
+  if (e.key === 'Enter') { e.preventDefault(); $('btnSetPin').click(); }
+});
+$('btnClearPin').addEventListener('click', function(){
+  askConfirm('Remove the kiosk Present-Mode PIN lock?', clearKioskPin, { danger: true, yesLabel: 'Remove PIN' });
+});
+loadKioskPin();
 $('btnSidebarStartFresh').addEventListener('click', promptStartFresh);
 
 /* ============================================================
@@ -2615,6 +3331,7 @@ function overwriteWheelInstance(inst){
 }
 
 function loadWheelInstanceOntoDevice(inst){
+  if (spinning) { showToast('Wait for the current spin to finish.'); return; }
   askConfirm(
     'Load "' + inst.name + '" onto this device? Your active segments, quantities, and baseline on this device will be replaced.',
     function(){
@@ -2622,6 +3339,7 @@ function loadWheelInstanceOntoDevice(inst){
       state.title = inst.title || inst.name || 'Prize Draw';
       state.entries = cleanList(inst.entries);
       state.prizes = cleanList(inst.prizes);
+      state.depleted = [];
       state.baseline = (inst.baseline && Array.isArray(inst.baseline.entries))
         ? {
             entries: cleanList(inst.baseline.entries),
@@ -2653,13 +3371,15 @@ function loadWheelInstanceOntoDevice(inst){
 
       flow.stage = 1;
       flow.person = null;
+      flow.lastStep1SpinId = null;
+      lastWinningIdx = -1;
+      clearPendingSpin();
       $('titleInput').value = state.title;
       $('presentTitle').textContent = state.title;
       syncOptionInputs();
-      refresh();
+      refresh(true);
       updateBaselineUI();
       renderThemePickerCards();
-      save(true);
       showToast('Loaded setup: ' + inst.name);
     }
   );
@@ -2691,6 +3411,13 @@ function isOverlayDrawerMode(){
          window.matchMedia('(max-width: 900px), (orientation: portrait)').matches;
 }
 
+function isThemesTabOpen(){
+  var pane = document.querySelector('.pane[data-pane="themes"]');
+  if (!pane || !pane.classList.contains('active')) return false;
+  if (isOverlayDrawerMode()) return $('sidePanel').classList.contains('drawer-open');
+  return !document.body.classList.contains('setup-closed');
+}
+
 function activateTab(tabName){
   Array.prototype.forEach.call(document.querySelectorAll('.tab'), function(x){
     x.classList.toggle('active', x.getAttribute('data-tab') === tabName);
@@ -2700,19 +3427,33 @@ function activateTab(tabName){
   });
 }
 
+function setPresentMenuGlyph(ch){
+  var g = $('presentMenuGlyph');
+  if (g) g.textContent = ch;
+}
+
 function closePresentMenu(){
   $('presentMenu').classList.remove('show');
   $('btnPresentMenu').classList.remove('open');
-  $('btnPresentMenu').textContent = '☰';
+  setPresentMenuGlyph('☰');
 }
 
 function togglePresentMenu(e){
   if (e) e.stopPropagation();
   var menu = $('presentMenu');
   var willOpen = !menu.classList.contains('show');
-  menu.classList.toggle('show', willOpen);
-  $('btnPresentMenu').classList.toggle('open', willOpen);
-  $('btnPresentMenu').textContent = willOpen ? '✕' : '☰';
+  if (willOpen) {
+    requireOperatorPin(function(){
+      menu.classList.add('show');
+      $('btnPresentMenu').classList.add('open');
+      setPresentMenuGlyph('✕');
+    }, 'Enter your 4-digit kiosk PIN to open the operator menu.');
+    return;
+  }
+  closePresentMenu();
+  if (document.body.classList.contains('present') && !$('sidePanel').classList.contains('drawer-open')) {
+    operatorPresentUnlocked = false;
+  }
 }
 
 function syncHeaderButtons(){
@@ -2739,6 +3480,9 @@ function openDrawerToTab(tabName){
 
 function closeSetupDrawer(){
   $('sidePanel').classList.remove('drawer-open');
+  if (document.body.classList.contains('present')) {
+    operatorPresentUnlocked = false;
+  }
   syncHeaderButtons();
 }
 
@@ -2785,7 +3529,11 @@ $('btnExitPresentFromDrawer').addEventListener('click', function(){
 document.addEventListener('click', function(e){
   var corner = $('presentCorner');
   if (corner && !corner.contains(e.target)) {
+    var wasOpen = $('presentMenu').classList.contains('show');
     closePresentMenu();
+    if (wasOpen && document.body.classList.contains('present') && !$('sidePanel').classList.contains('drawer-open')) {
+      operatorPresentUnlocked = false;
+    }
   }
 });
 
@@ -2795,9 +3543,11 @@ $('hdrLogoWrap').addEventListener('click', function(){
   logoTaps++;
   clearTimeout(tapTimer);
   if (logoTaps >= 3) {
-    openDrawerToTab('themes');
-    showToast("Themes tab opened");
     logoTaps = 0;
+    requireOperatorPin(function(){
+      openDrawerToTab('themes');
+      showToast("Themes tab opened");
+    }, 'Enter your 4-digit kiosk PIN to open Themes.');
   } else {
     tapTimer = setTimeout(function(){ logoTaps = 0; }, 500);
   }
@@ -2928,6 +3678,7 @@ function formatSegFontScaleLabel(scale){
 
 function syncCurrentThemeState() {
   if (!state.theme) return;
+  themesFormDirty = true;
   var active = getActiveThemeFromForm(state.theme.id, state.theme.name);
   state.theme = active;
   save();
@@ -2958,11 +3709,14 @@ $('themePointerColor').addEventListener('input', function(){
 });
 $('themeRimColor').addEventListener('input', function(){
   RIM = this.value;
+  wheelSlicesDirty = true;
+  hubDirty = true;
   draw();
   syncCurrentThemeState();
 });
 $('themeRuleColor').addEventListener('input', function(){
   RULE = this.value;
+  wheelSlicesDirty = true;
   draw();
   syncCurrentThemeState();
 });
@@ -3055,6 +3809,7 @@ $('themeHdrScale').addEventListener('input', function(){
 $('themeCenterScale').addEventListener('input', function(){
   centerLogoScale = parseFloat(this.value) || 1;
   $('valCenterScale').textContent = centerLogoScale.toFixed(1) + 'x';
+  hubDirty = true;
   draw();
   syncCurrentThemeState();
 });
@@ -3073,7 +3828,7 @@ $('themeGlowSize').addEventListener('input', function(){
 
 $('themeGlow').addEventListener('change', function(){
    state.options.glow = this.checked;
-   document.querySelector('.wheel-glow').classList.toggle('off', !state.options.glow);
+   if (wheelGlowEl) wheelGlowEl.classList.toggle('off', !state.options.glow);
    syncCurrentThemeState();
 });
 
@@ -3089,6 +3844,7 @@ function handleLogoUpload(inputId, type) {
     var file = this.files[0];
     if (!file) return;
     compressImageFileToDataUrl(file, type, function(compressedDataUrl){
+      themesFormDirty = true;
       if (type === 'hdr') {
         pendingLogoUploads.hdr = compressedDataUrl;
         logoReady = false;
@@ -3100,6 +3856,7 @@ function handleLogoUpload(inputId, type) {
       } else {
         pendingLogoUploads.center = compressedDataUrl;
         centerLogoReady = false;
+        hubDirty = true;
         centerLogoImg.src = compressedDataUrl;
       }
       if (type === 'center') draw();
@@ -3167,6 +3924,8 @@ function applyThemeObject(t, saveState){
   segTextCustom = sTextCustom;
   segTextColor = sTextColor;
   segFontScale = sFontScale;
+  wheelSlicesDirty = true;
+  hubDirty = true;
 
   // Sync Stage Logo visibility checkbox (wrap displays once stageLogo.onload confirms image exists)
   $('themeStageLogo').checked = stageLogoState;
@@ -3175,7 +3934,7 @@ function applyThemeObject(t, saveState){
   // Sync Glow state
   state.options.glow = glowState;
   $('themeGlow').checked = glowState;
-  document.querySelector('.wheel-glow').classList.toggle('off', !glowState);
+  if (wheelGlowEl) wheelGlowEl.classList.toggle('off', !glowState);
 
   // Sync Form Input Controls
   $('themeBgMain').value = bgMain;
@@ -3426,11 +4185,13 @@ function renderThemePickerCards(){
       '</div>';
 
     card.addEventListener('click', function(){
+      themesFormDirty = false;
       applyThemeObject(t, true);
       renderThemeDropdown(t.id);
       renderThemePickerCards();
     });
     card.addEventListener('dblclick', function(){
+      themesFormDirty = false;
       applyThemeObject(t, true);
       renderThemeDropdown(t.id);
       closeThemePicker();
@@ -3464,9 +4225,47 @@ $('themePickerOverlay').addEventListener('click', function(e){
   if (e.target === this) closeThemePicker();
 });
 
+/* Manual "Sync GitHub Themes" Button ([OP-5]) */
+if ($('btnRefreshThemes')) {
+  $('btnRefreshThemes').addEventListener('click', function(){
+    var btn = this;
+    btn.disabled = true;
+    btn.textContent = '↻ ...';
+    try {
+      if (navigator.serviceWorker && navigator.serviceWorker.controller) {
+        navigator.serviceWorker.controller.postMessage({ type: 'FORCE_REFRESH_THEMES' });
+      }
+    } catch(e){}
+    discoverThemesFromDisk(true).then(function(loaded){
+      // Prune local folder overrides whose folder was deleted from ./themes/index.json
+      if (Array.isArray(state.customThemes)) {
+        state.customThemes = state.customThemes.filter(function(ct){
+          return ct && ct.id && !(ct.isFolderOverride && !isBuiltinId(ct.id));
+        });
+      }
+      var curId = (state.theme && state.theme.id) ? state.theme.id : defaultThemeId();
+      var resolved = findThemeById(curId);
+      if (!resolved) {
+        themesFormDirty = false;
+        resolved = BUILTIN_THEMES[0] || getNeutralFallbackTheme();
+        applyThemeObject(resolved, true);
+      } else if (!themesFormDirty) {
+        applyThemeObject(resolved, false);
+      }
+      renderThemeDropdown(state.theme ? state.theme.id : defaultThemeId());
+      renderThemePickerCards();
+      showToast('Synced ' + (loaded ? loaded.length : BUILTIN_THEMES.length) + ' themes from ./themes/');
+    }).finally(function(){
+      btn.disabled = false;
+      btn.textContent = '↻ Sync';
+    });
+  });
+}
+
 /* Event listeners for Theme Presets Dropdown & Buttons */
 $('themeSelect').addEventListener('change', function(){
   pendingLogoUploads = { hdr: null, center: null };
+  themesFormDirty = false;
   $('uploadHdrLogo').value = '';
   $('uploadCenterLogo').value = '';
   var themeObj = findThemeById(this.value) || BUILTIN_THEMES[0];
@@ -3477,6 +4276,7 @@ $('themeSelect').addEventListener('change', function(){
 
 $('btnApplyTheme').addEventListener('click', function(){
   var activeTheme = getActiveThemeFromForm(state.theme ? state.theme.id : 'custom', state.theme ? state.theme.name : 'Custom Theme');
+  themesFormDirty = true;
   applyThemeObject(activeTheme, true);
   showToast("Wheel slice colours applied!");
 });
@@ -3514,6 +4314,7 @@ function persistThemeWithLogosAndCloud(themeObj, sourceThemeId, onDone){
   };
 
   pendingLogoUploads = { hdr: null, center: null };
+  themesFormDirty = false;
   $('uploadHdrLogo').value = '';
   $('uploadCenterLogo').value = '';
 
@@ -3600,6 +4401,7 @@ $('btnDeleteTheme').addEventListener('click', function(){
     }
     askConfirm('Restore built-in preset "' + currentObj.name + '" to its factory defaults?', function(){
       pendingLogoUploads = { hdr: null, center: null };
+      themesFormDirty = false;
       state.customThemes = state.customThemes.filter(function(t){ return t && t.id !== selId; });
       deleteThemeLogosFromSWCache(selId).then(function(){
         if (window.__spinWheelCloud && window.__spinWheelCloud.deleteThemeFromCloud) {
@@ -3617,6 +4419,7 @@ $('btnDeleteTheme').addEventListener('click', function(){
   
   askConfirm('Delete saved theme "' + currentObj.name + '"?', function(){
     pendingLogoUploads = { hdr: null, center: null };
+    themesFormDirty = false;
     if (state.customThemes) {
       state.customThemes = state.customThemes.filter(function(t){ return t && t.id !== selId; });
     }
@@ -3636,6 +4439,7 @@ $('btnDeleteTheme').addEventListener('click', function(){
 $('btnResetTheme').addEventListener('click', function(){
   var selId = $('themeSelect').value;
   pendingLogoUploads = { hdr: null, center: null };
+  themesFormDirty = false;
   $('uploadHdrLogo').value = '';
   $('uploadCenterLogo').value = '';
   if (isBuiltinId(selId)) {
@@ -3821,11 +4625,117 @@ function buildSegments(){
       }
     }
   }
+  wheelSlicesDirty = true;
+  if (lastWinningIdx >= segments.length) lastWinningIdx = -1;
   prepareSegmentLayout();
 }
 
+/* DPR-Scaled Offscreen Canvas Caches (eliminates 60/120 FPS slice/shadowBlur/logo redraws) */
+var wheelSlicesCanvas = document.createElement('canvas');
+var wheelSlicesCtx = wheelSlicesCanvas.getContext('2d');
+var hubCanvas = document.createElement('canvas');
+var hubCtx = hubCanvas.getContext('2d');
+var hubBoxCss = 0;
+var canvasDpr = window.devicePixelRatio || 1;
+
+function rebuildWheelSlicesBuffer(){
+  var w = cssSize, c = w/2, R = w/2 - 14, n = segments.length;
+  var dpr = canvasDpr;
+  wheelSlicesCanvas.width = Math.max(1, Math.round(w * dpr));
+  wheelSlicesCanvas.height = Math.max(1, Math.round(w * dpr));
+  wheelSlicesCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  wheelSlicesCtx.clearRect(0, 0, w, w);
+  if (!n) { wheelSlicesDirty = false; return; }
+
+  var seg = (Math.PI*2)/n;
+  wheelSlicesCtx.save();
+  wheelSlicesCtx.beginPath();
+  wheelSlicesCtx.arc(c, c, R + 7, 0, Math.PI*2);
+  wheelSlicesCtx.fillStyle = RIM;
+  wheelSlicesCtx.fill();
+  wheelSlicesCtx.restore();
+
+  for (var i = 0; i < n; i++){
+    var a0 = i * seg, a1 = a0 + seg;
+    wheelSlicesCtx.beginPath();
+    wheelSlicesCtx.moveTo(c, c);
+    wheelSlicesCtx.arc(c, c, R, a0, a1);
+    wheelSlicesCtx.closePath();
+    wheelSlicesCtx.fillStyle = segments[i].color;
+    wheelSlicesCtx.fill();
+    if (n > 1){
+      wheelSlicesCtx.strokeStyle = RULE;
+      wheelSlicesCtx.lineWidth = 2;
+      wheelSlicesCtx.stroke();
+    }
+  }
+
+  wheelSlicesCtx.beginPath();
+  wheelSlicesCtx.arc(c, c, R, 0, Math.PI*2);
+  wheelSlicesCtx.strokeStyle = RIM;
+  wheelSlicesCtx.lineWidth = 3;
+  wheelSlicesCtx.stroke();
+  wheelSlicesDirty = false;
+}
+
+function rebuildHubBuffer(){
+  var w = cssSize, R = w/2 - 14;
+  var hub = Math.max(46, R*0.20);
+  var pad = 24;
+  hubBoxCss = Math.ceil((hub + pad) * 2);
+  var half = hubBoxCss / 2;
+  var dpr = canvasDpr;
+
+  hubCanvas.width = Math.max(1, Math.round(hubBoxCss * dpr));
+  hubCanvas.height = Math.max(1, Math.round(hubBoxCss * dpr));
+  hubCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  hubCtx.clearRect(0, 0, hubBoxCss, hubBoxCss);
+
+  hubCtx.save();
+  hubCtx.beginPath();
+  hubCtx.arc(half, half, hub, 0, Math.PI*2);
+  hubCtx.fillStyle = '#FFFFFF';
+  hubCtx.shadowColor = 'rgba(0,0,0,.5)';
+  hubCtx.shadowBlur = 12;
+  hubCtx.fill();
+  hubCtx.restore();
+
+  hubCtx.save();
+  hubCtx.beginPath();
+  hubCtx.arc(half, half, hub, 0, Math.PI*2);
+  hubCtx.clip();
+  var cw = centerLogoImg.naturalWidth || centerLogoImg.width || 0;
+  var ch = centerLogoImg.naturalHeight || centerLogoImg.height || 0;
+  if (centerLogoReady && cw > 0 && ch > 0){
+    var imgAsp = cw / ch;
+    var baseFit = hub * 1.5;
+    var fitW = baseFit * centerLogoScale;
+    var fitH = fitW;
+    if (imgAsp > 1) { fitH = fitW / imgAsp; } else { fitW = fitH * imgAsp; }
+    hubCtx.imageSmoothingEnabled = true;
+    if ('imageSmoothingQuality' in hubCtx) hubCtx.imageSmoothingQuality = 'high';
+    hubCtx.drawImage(centerLogoImg, half - fitW/2, half - fitH/2, fitW, fitH);
+  }
+  hubCtx.restore();
+
+  hubCtx.beginPath();
+  hubCtx.arc(half, half, hub, 0, Math.PI*2);
+  hubCtx.strokeStyle = RIM;
+  hubCtx.lineWidth = 2.5;
+  hubCtx.stroke();
+  hubDirty = false;
+}
+
+function isAllClaimedState(){
+  if (activeList().length > 0) return false;
+  var hasHistory = Array.isArray(state.history) && state.history.length > 0;
+  var hasDepleted = Array.isArray(state.depleted) && state.depleted.length > 0;
+  var hasBase = !!(state.baseline && Array.isArray(state.baseline.entries) && state.baseline.entries.length > 0);
+  return hasHistory || hasDepleted || hasBase;
+}
+
 function sizeCanvas(){
-  var stage = document.querySelector('.stage');
+  var stage = stageEl || document.querySelector('.stage');
   if (!stage) return;
   
   var logoEl = $('stageLogoWrap');
@@ -3838,14 +4748,16 @@ function sizeCanvas(){
   var avail = Math.min(availWidth, availHeight);
   
   cssSize = Math.max(200, Math.min(760, avail));
-  var dpr = window.devicePixelRatio || 1;
+  canvasDpr = window.devicePixelRatio || 1;
   
   canvas.style.width = cssSize + 'px';
   canvas.style.height = cssSize + 'px';
-  canvas.width  = Math.round(cssSize * dpr);
-  canvas.height = Math.round(cssSize * dpr);
+  canvas.width  = Math.round(cssSize * canvasDpr);
+  canvas.height = Math.round(cssSize * canvasDpr);
   
-  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  ctx.setTransform(canvasDpr, 0, 0, canvasDpr, 0, 0);
+  wheelSlicesDirty = true;
+  hubDirty = true;
   prepareSegmentLayout();
   draw();
 }
@@ -3855,42 +4767,60 @@ function draw(){
   ctx.clearRect(0,0,w,w);
 
   if (!segments.length){
+    var t = state.theme || {};
+    var claimed = isAllClaimedState();
     ctx.save();
     ctx.beginPath(); ctx.arc(c,c,R,0,Math.PI*2);
-    ctx.fillStyle = '#222222'; ctx.fill();
-    ctx.strokeStyle = '#444444'; ctx.lineWidth = 3; ctx.stroke();
-    ctx.fillStyle = '#8DA0B3';
-    ctx.font = '600 ' + Math.round(w*0.033) + 'px ' + FONT_STACK;
+    ctx.fillStyle = t.bgPanel || '#181818'; ctx.fill();
+    ctx.strokeStyle = claimed ? (t.accent || '#0866FF') : (t.rimColor || '#444444');
+    ctx.lineWidth = claimed ? 4 : 3; ctx.stroke();
+    ctx.fillStyle = claimed ? (t.textMain || '#ffffff') : '#8DA0B3';
+    ctx.font = '800 ' + Math.round(w * (claimed ? 0.048 : 0.033)) + 'px ' + FONT_STACK;
     ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-    ctx.fillText('Add some segments to get started', c, c);
+    if (claimed) {
+      ctx.fillText('All Prizes Claimed!', c, c - Math.round(w * 0.03));
+      ctx.fillStyle = '#8DA0B3';
+      ctx.font = '600 ' + Math.round(w * 0.026) + 'px ' + FONT_STACK;
+      ctx.fillText('Reset to baseline or restock in Setup', c, c + Math.round(w * 0.035));
+    } else {
+      ctx.fillText('Add some segments to get started', c, c);
+    }
     ctx.restore();
     return;
   }
 
   var n = segments.length, seg = (Math.PI*2)/n, rot = rotation * Math.PI/180;
 
+  if (wheelSlicesDirty) rebuildWheelSlicesBuffer();
+  if (hubDirty) rebuildHubBuffer();
+
+  // Single GPU-friendly rotated blit for rim, all slices, and divider lines
   ctx.save();
-  ctx.beginPath(); ctx.arc(c,c,R+7,0,Math.PI*2);
-  ctx.fillStyle = RIM; ctx.fill();
+  ctx.translate(c, c);
+  ctx.rotate(rot);
+  ctx.drawImage(wheelSlicesCanvas, -c, -c, w, w);
   ctx.restore();
 
-  for (var i=0; i<n; i++){
-    var a0 = rot + i*seg, a1 = a0 + seg;
+  // Soft winning slice highlight on stop ([UI-1])
+  if (!spinning && lastWinningIdx >= 0 && lastWinningIdx < n){
+    var wa0 = rot + lastWinningIdx * seg;
+    var wa1 = wa0 + seg;
+    ctx.save();
     ctx.beginPath();
-    ctx.moveTo(c,c);
-    ctx.arc(c,c,R,a0,a1);
+    ctx.moveTo(c, c);
+    ctx.arc(c, c, R - 1, wa0, wa1);
     ctx.closePath();
-    ctx.fillStyle = segments[i].color;
+    ctx.fillStyle = 'rgba(255,255,255,0.18)';
     ctx.fill();
-    if (n > 1){ ctx.strokeStyle = RULE; ctx.lineWidth = 2; ctx.stroke(); }
+    ctx.lineWidth = 3.5;
+    ctx.strokeStyle = (state.theme && state.theme.accent) ? state.theme.accent : '#ffffff';
+    ctx.stroke();
+    ctx.restore();
   }
 
-  ctx.beginPath(); ctx.arc(c,c,R,0,Math.PI*2);
-  ctx.strokeStyle = RIM; ctx.lineWidth = 3; ctx.stroke();
-
-  var hub = Math.max(46, R*0.20);
   var txPos = R - w*0.035;
 
+  // Dynamic upright slice text (flips smoothly across vertical axis)
   for (var k=0; k<n; k++){
     var s = segments[k];
     if (!s.lines) continue;
@@ -3912,26 +4842,8 @@ function draw(){
     ctx.restore();
   }
 
-  ctx.save();
-  ctx.beginPath(); ctx.arc(c,c,hub,0,Math.PI*2);
-  ctx.fillStyle = '#FFFFFF'; ctx.fill();
-  ctx.shadowColor = 'rgba(0,0,0,.5)'; ctx.shadowBlur = 12; ctx.fill();
-  ctx.restore();
-  
-  ctx.save();
-  ctx.beginPath(); ctx.arc(c,c,hub,0,Math.PI*2); ctx.clip();
-  if (centerLogoReady && centerLogoImg.width > 0){
-    var imgAsp = centerLogoImg.width / centerLogoImg.height;
-    var baseFit = hub * 1.5;
-    var fitW = baseFit * centerLogoScale;
-    var fitH = fitW;
-    if (imgAsp > 1) { fitH = fitW / imgAsp; } else { fitW = fitH * imgAsp; }
-    ctx.drawImage(centerLogoImg, c - fitW/2, c - fitH/2, fitW, fitH);
-  }
-  ctx.restore();
-  
-  ctx.beginPath(); ctx.arc(c,c,hub,0,Math.PI*2);
-  ctx.strokeStyle = RIM; ctx.lineWidth = 2.5; ctx.stroke();
+  // Single blit for pre-rendered hub + shadow + scaled center logo + border
+  ctx.drawImage(hubCanvas, c - hubBoxCss/2, c - hubBoxCss/2, hubBoxCss, hubBoxCss);
 }
 
 /* ============================================================
@@ -3945,9 +4857,22 @@ function audio(){
   if (!state.options.sound) return null;
   try {
     if (!actx) actx = new (window.AudioContext || window.webkitAudioContext)();
-    if (actx.state === 'suspended') actx.resume();
+    if (actx.state === 'suspended') {
+      var res = actx.resume();
+      if (res && typeof res.catch === 'function') res.catch(function(){});
+    }
     return actx;
   } catch(e){ return null; }
+}
+
+function triggerPointerTick(){
+  if (!pointerEl || isReducedMotion()) return;
+  pointerEl.classList.add('tick');
+  if (pointerTickTimer) clearTimeout(pointerTickTimer);
+  pointerTickTimer = setTimeout(function(){
+    if (pointerEl) pointerEl.classList.remove('tick');
+    pointerTickTimer = null;
+  }, 65);
 }
 
 function tick(){
@@ -3987,13 +4912,144 @@ function fanfare(){
   } catch(e){}
 }
 
+function removeOne(list, label){
+  for (var i=0; i<list.length; i++){
+    if (list[i].label === label){
+      list[i].qty--;
+      var left = Math.max(0, list[i].qty);
+      if (list[i].qty <= 0) list.splice(i,1);
+      return left;
+    }
+  }
+  return null;
+}
+
+function getRemainingQty(list, label){
+  for (var i=0; i<list.length; i++){
+    if (list[i].label === label) return list[i].qty;
+  }
+  return 0;
+}
+
+/* Strictly Idempotent Spin Commit (shared by normal spin completion & mid-spin crash recovery) */
+function commitSpinOutcome(pending, opts){
+  opts = opts || {};
+  if (!pending || !pending.spinId || !pending.label) {
+    clearPendingSpin();
+    return { alreadyCommitted: true };
+  }
+
+  var two = (pending.mode === 'two');
+  var shouldRemove = !!pending.remove;
+  var remaining = null;
+
+  if (two && pending.stage === 1){
+    if (flow.lastStep1SpinId === pending.spinId) {
+      clearPendingSpin();
+      return { alreadyCommitted: true };
+    }
+    flow.lastStep1SpinId = pending.spinId;
+    flow.person = pending.label;
+    if (shouldRemove) {
+      remaining = removeOne(state.entries, pending.label);
+      if (remaining === 0) markDepleted('entries', pending.label);
+    } else {
+      remaining = getRemainingQty(state.entries, pending.label);
+    }
+    flow.stage = 2;
+    clearPendingSpin();
+    if (opts.showModal) {
+      showWinner({stage:1, headline:pending.label, color:pending.color || '#0866FF', remaining:remaining, removed:shouldRemove});
+    }
+    refresh(true);
+    return { alreadyCommitted: false, remaining: remaining };
+  }
+
+  // Idempotency guard: if this spinId is already recorded in history, never deduct twice
+  for (var hi = state.history.length - 1; hi >= 0; hi--){
+    if (state.history[hi] && state.history[hi].spinId === pending.spinId) {
+      clearPendingSpin();
+      return { alreadyCommitted: true };
+    }
+  }
+
+  var targetListKey = two ? 'prizes' : 'entries';
+  var targetList = two ? state.prizes : state.entries;
+  if (shouldRemove) {
+    remaining = removeOne(targetList, pending.label);
+    if (remaining === 0) markDepleted(targetListKey, pending.label);
+  } else {
+    remaining = getRemainingQty(targetList, pending.label);
+  }
+
+  var rec = two
+    ? {
+        spinId: pending.spinId,
+        person: pending.person || flow.person || '',
+        prize: pending.label,
+        time: new Date().toISOString(),
+        deviceId: getOrCreateDeviceId(),
+        themeId: pending.themeId || ((state.theme && state.theme.id) ? state.theme.id : defaultThemeId()),
+        remainingAfterSpin: remaining,
+        removed: shouldRemove,
+        recovered: !!opts.recovered
+      }
+    : {
+        spinId: pending.spinId,
+        label: pending.label,
+        time: new Date().toISOString(),
+        deviceId: getOrCreateDeviceId(),
+        themeId: pending.themeId || ((state.theme && state.theme.id) ? state.theme.id : defaultThemeId()),
+        remainingAfterSpin: remaining,
+        removed: shouldRemove,
+        recovered: !!opts.recovered
+      };
+  state.history.push(rec);
+  renderHistory();
+
+  if (two){ flow.stage = 1; flow.person = null; flow.lastStep1SpinId = null; }
+  clearPendingSpin();
+
+  var preserveHighlightIdx = (typeof opts.winnerIdx === 'number') ? opts.winnerIdx : -1;
+  refresh(true);
+  if (preserveHighlightIdx >= 0 && segments[preserveHighlightIdx] && segments[preserveHighlightIdx].label === pending.label) {
+    lastWinningIdx = preserveHighlightIdx;
+    draw();
+  } else {
+    lastWinningIdx = -1;
+  }
+
+  if (opts.showModal) {
+    showWinner({stage:2, headline:pending.label, color:pending.color || '#0866FF', person:two ? rec.person : null, remaining:remaining, removed:shouldRemove});
+  }
+  return { alreadyCommitted: false, remaining: remaining };
+}
+
+function recoverPendingSpinIfAny(rawOverride){
+  var env = rawOverride ? unwrapEnvelope(rawOverride) : safeParseStorage(PENDING_SPIN_KEY);
+  if (!env || !env.data || !env.data.spinId) return false;
+  var pending = env.data;
+  var res = commitSpinOutcome(pending, { showModal: false, recovered: true });
+  if (!res.alreadyCommitted) {
+    recordDiagnostic('mid-spin-recovery', 'Committed interrupted spin ' + pending.spinId + ' (' + pending.label + ')');
+    showToast('Recovered interrupted spin: "' + pending.label + '" committed safely.');
+    return true;
+  }
+  return false;
+}
+
 function spin(){
-  if (spinning || !segments.length) return;
+  var nowLaunch = performance.now();
+  if (spinning || !segments.length || (nowLaunch - lastSpinLaunchMs) < 250) return;
+  if (spinQueuedTimer) { clearTimeout(spinQueuedTimer); spinQueuedTimer = null; }
+
   var list = activeList();
   var chosenEntry = pickWeightedEntry(list);
   if (!chosenEntry) return;
 
+  lastSpinLaunchMs = nowLaunch;
   spinning = true;
+  lastWinningIdx = -1;
   $('btnSpin').disabled = true;
 
   // Find all visual slices corresponding to the cryptographically selected winner
@@ -4016,73 +5072,62 @@ function spin(){
   var dur = Math.max(3, state.options.duration|0) * 1000;
   var t0 = performance.now(), lastTickSeg = -1;
 
+  // Write-ahead journal BEFORE frame 1 so a power cut / tab kill mid-spin commits deterministically
+  var spinId = 'sp_' + Date.now().toString(36) + '_' + randInt(1000000000).toString(36);
+  var pendingSpin = {
+    spinId: spinId,
+    mode: state.mode,
+    stage: flow.stage,
+    person: flow.person || null,
+    label: chosenEntry.label,
+    color: segments[winner].color,
+    remove: !!state.options.remove,
+    themeId: (state.theme && state.theme.id) ? state.theme.id : defaultThemeId(),
+    startedAt: Date.now(),
+    dur: dur
+  };
+  writePendingSpin(pendingSpin);
+
+  var completed = false;
+  function completeSpinNow(){
+    if (completed) return;
+    completed = true;
+    if (activeSpinRAF) { cancelAnimationFrame(activeSpinRAF); activeSpinRAF = null; }
+    if (activeSpinTimeout) { clearTimeout(activeSpinTimeout); activeSpinTimeout = null; }
+    activeSpinCheckComplete = null;
+    if (pointerEl) pointerEl.classList.remove('tick');
+
+    rotation = ((to % 360) + 360) % 360;
+    spinning = false;
+    lastWinningIdx = winner;
+    draw();
+    commitSpinOutcome(pendingSpin, { showModal: true, recovered: false, winnerIdx: winner });
+  }
+
+  // Wall-clock & visibility failsafe so backgrounding a tab never stalls the spin
+  activeSpinTimeout = setTimeout(completeSpinNow, dur + 350);
+  activeSpinCheckComplete = function(){
+    if (performance.now() - t0 >= dur) completeSpinNow();
+  };
+
   function frame(now){
+    if (completed) return;
     var p = Math.min(1, (now - t0)/dur);
     var e = 1 - Math.pow(1 - p, 4);            // easeOutQuart
     rotation = from + (to - from) * e;
     draw();
     var cur = Math.floor(((((270 - rotation) % 360) + 360) % 360) / segDeg);
-    if (cur !== lastTickSeg){ if (lastTickSeg !== -1) tick(); lastTickSeg = cur; }
-    if (p < 1) requestAnimationFrame(frame);
-    else {
-      rotation = to % 360;
-      draw();
-      spinning = false;
-      $('btnSpin').disabled = false;
-      finish(winner);
+    if (cur !== lastTickSeg){
+      if (lastTickSeg !== -1) {
+        tick();
+        triggerPointerTick();
+      }
+      lastTickSeg = cur;
     }
+    if (p < 1) activeSpinRAF = requestAnimationFrame(frame);
+    else completeSpinNow();
   }
-  requestAnimationFrame(frame);
-}
-
-function removeOne(list, label){
-  for (var i=0; i<list.length; i++){
-    if (list[i].label === label){
-      list[i].qty--;
-      var left = Math.max(0, list[i].qty);
-      if (list[i].qty <= 0) list.splice(i,1);
-      return left;
-    }
-  }
-  return null;
-}
-
-function getRemainingQty(list, label){
-  for (var i=0; i<list.length; i++){
-    if (list[i].label === label) return list[i].qty;
-  }
-  return 0;
-}
-
-function finish(idx){
-  var label = segments[idx].label, color = segments[idx].color;
-  var two = state.mode === 'two';
-  var remaining = null;
-
-  if (two && flow.stage === 1){
-    flow.person = label;
-    if (state.options.remove) remaining = removeOne(state.entries, label);
-    else remaining = getRemainingQty(state.entries, label);
-    flow.stage = 2;
-    showWinner({stage:1, headline:label, color:color, remaining:remaining});
-    refresh(true);
-    return;
-  }
-
-  var rec = two
-    ? {person:flow.person, prize:label, time:new Date().toISOString()}
-    : {label:label, time:new Date().toISOString()};
-  state.history.push(rec);
-  renderHistory();
-
-  var targetList = two ? state.prizes : state.entries;
-  if (state.options.remove) remaining = removeOne(targetList, label);
-  else remaining = getRemainingQty(targetList, label);
-
-  showWinner({stage:2, headline:label, color:color, person:two ? flow.person : null, remaining:remaining});
-
-  if (two){ flow.stage = 1; flow.person = null; }   
-  refresh(true);
+  activeSpinRAF = requestAnimationFrame(frame);
 }
 
 function showWinner(o){
@@ -4097,13 +5142,24 @@ function showWinner(o){
   $('winnerPrize').textContent = o.headline;
   $('winnerPrize').style.color = readableInk(o.color);
 
-  if (o.remaining !== null && o.remaining !== undefined && state.options.remove){
-    $('winnerStockNote').style.display = 'block';
-    $('winnerStockNote').textContent = o.remaining > 0
-      ? (o.remaining + ' of "' + o.headline + '" remaining on the wheel')
-      : ('That was the last "' + o.headline + '" — removed from the wheel!');
+  var noteEl = $('winnerStockNote');
+  var didRemove = (o.removed !== undefined) ? !!o.removed : !!state.options.remove;
+  if (o.remaining !== null && o.remaining !== undefined && didRemove){
+    var thresh = Math.max(0, parseInt(state.options.lowStockThreshold, 10) || 0);
+    noteEl.style.display = 'inline-block';
+    noteEl.classList.remove('low', 'sold-out');
+    if (o.remaining <= 0) {
+      noteEl.classList.add('sold-out');
+      noteEl.textContent = 'Sold Out — that was the last "' + o.headline + '"!';
+    } else if (thresh > 0 && o.remaining <= thresh) {
+      noteEl.classList.add('low');
+      noteEl.textContent = 'Low stock — last ' + o.remaining + ' of "' + o.headline + '" left';
+    } else {
+      noteEl.textContent = o.remaining + ' of "' + o.headline + '" remaining on the wheel';
+    }
   } else {
-    $('winnerStockNote').style.display = 'none';
+    noteEl.style.display = 'none';
+    noteEl.classList.remove('low', 'sold-out');
   }
 
   if (o.stage === 2 && o.person){
@@ -4114,6 +5170,7 @@ function showWinner(o){
   }
 
   $('btnPrimaryAct').textContent = (o.stage === 1) ? 'Spin for the prize' : 'Spin again';
+  $('btnPrimaryAct').disabled = activeList().length < 1;
   $('btnShot').style.display = (o.stage === 1) ? 'none' : 'inline-block';
 
   $('winnerOverlay').classList.add('show');
@@ -4122,7 +5179,17 @@ function showWinner(o){
 }
 
 var cCanvas = $('confetti'), cCtx = cCanvas.getContext('2d'), parts = [], confRAF = null;
+function stopConfetti(){
+  if (confRAF) { cancelAnimationFrame(confRAF); confRAF = null; }
+  parts = [];
+  if (cCtx && cCanvas) {
+    cCtx.clearRect(0, 0, cCanvas.width, cCanvas.height);
+    cCanvas.style.display = 'none';
+  }
+}
+
 function confetti(accent){
+  if (isReducedMotion()) return;
   cCanvas.width = window.innerWidth; cCanvas.height = window.innerHeight;
   cCanvas.style.display = 'block';
   var t = state.theme || {};
@@ -4160,7 +5227,7 @@ function confetti(accent){
       cCtx.restore();
     }
     if (alive > 0 && now < end) confRAF = requestAnimationFrame(step);
-    else { cCtx.clearRect(0,0,cCanvas.width,cCanvas.height); cCanvas.style.display = 'none'; confRAF = null; }
+    else stopConfetti();
   })(performance.now());
 }
 
@@ -4182,30 +5249,139 @@ function refresh(immediateCloud){
   save(immediateCloud === true);
 }
 
-function renderOneList(list, ulId, emptyId, countId){
+function renderOneList(list, ulId, emptyId, countId, baselineList){
   var ul = $(ulId);
   ul.innerHTML = '';
+
+  // O(M) color map instead of O(N*M) segments.filter(...) inside the loop
+  var colorByLabel = {};
+  for (var si = 0; si < segments.length; si++) {
+    var segItem = segments[si];
+    if (segItem && colorByLabel[segItem.label] === undefined) {
+      colorByLabel[segItem.label] = segItem.color;
+    }
+  }
+
+  var baseQtyByLabel = {};
+  var hasMultiBaseline = false;
+  if (Array.isArray(baselineList)) {
+    for (var bi = 0; bi < baselineList.length; bi++) {
+      var be = baselineList[bi];
+      if (be && be.label) {
+        var bq = parseInt(be.qty, 10) || 0;
+        baseQtyByLabel[be.label] = bq;
+        if (bq > 1) hasMultiBaseline = true;
+      }
+    }
+  }
+
+  var maxQtyInList = 0;
+  for (var mi = 0; mi < list.length; mi++) {
+    var mq = parseInt(list[mi].qty, 10) || 1;
+    if (mq > maxQtyInList) maxQtyInList = mq;
+  }
+  var thresh = state.options.remove ? Math.max(0, parseInt(state.options.lowStockThreshold, 10) || 0) : 0;
+  var hasSpins = (state.history || []).length > 0;
+
+  var frag = document.createDocumentFragment();
   list.forEach(function(e, i){
     var q = Math.max(1, parseInt(e.qty, 10) || 1);
     var color = state.options.colorByPrize
       ? PALETTE[i % PALETTE.length]
-      : (segments.filter(function(s){ return s.label === e.label; })[0] || {}).color || PALETTE[i % PALETTE.length];
+      : (colorByLabel[e.label] || PALETTE[i % PALETTE.length]);
+    var bq = baseQtyByLabel[e.label] || 0;
+    var pctLow = (bq >= 10 && q <= Math.ceil(bq * 0.1));
+    var absLow = (thresh > 0 && q <= thresh && (maxQtyInList > 1 || hasMultiBaseline || hasSpins || (bq > q)));
+    var isLow = !!(thresh > 0 && (pctLow || absLow));
+
     var li = document.createElement('li');
+    if (isLow) li.className = 'low-stock';
     li.innerHTML =
       '<span class="swatch" style="background:' + color + '"></span>' +
       '<input class="entry-label" value="' + esc(e.label) + '" maxlength="60" data-i="' + i + '">' +
-      '<input class="qty" type="number" min="1" max="' + MAX_ITEM_QTY + '" value="' + q + '" data-i="' + i + '">' +
+      (isLow ? '<span class="low-stock-tag" title="Low stock">LOW</span>' : '') +
+      '<span class="qty-wrap">' +
+        '<button type="button" class="qty-step" data-step="-1" data-i="' + i + '" title="Decrease quantity" aria-label="Decrease quantity">−</button>' +
+        '<input class="qty" type="number" min="1" max="' + MAX_ITEM_QTY + '" value="' + q + '" data-i="' + i + '">' +
+        '<button type="button" class="qty-step" data-step="1" data-i="' + i + '" title="Increase quantity" aria-label="Increase quantity">+</button>' +
+      '</span>' +
       '<button class="del" data-i="' + i + '" title="Remove">&times;</button>';
-    ul.appendChild(li);
+    frag.appendChild(li);
   });
+  ul.appendChild(frag);
   $(emptyId).style.display = list.length ? 'none' : 'block';
   return updateCountBadge(list, countId);
 }
 
+function renderDepletedList(){
+  var wrap = $('depletedWrap');
+  var ul = $('depletedList');
+  var titleEl = $('depletedTitle');
+  if (!wrap || !ul || !titleEl) return;
+
+  // Prune any item that has been re-added to its active list
+  var activeEntriesMap = {};
+  state.entries.forEach(function(e){ if (e && e.label) activeEntriesMap[e.label] = true; });
+  var activePrizesMap = {};
+  state.prizes.forEach(function(e){ if (e && e.label) activePrizesMap[e.label] = true; });
+
+  state.depleted = cleanDepleted(state.depleted).filter(function(d){
+    return d.list === 'prizes' ? !activePrizesMap[d.label] : !activeEntriesMap[d.label];
+  });
+
+  var visible = state.depleted.filter(function(d){
+    return state.mode === 'two' ? true : d.list === 'entries';
+  });
+
+  if (!visible.length) {
+    wrap.classList.remove('show');
+    ul.innerHTML = '';
+    return;
+  }
+
+  wrap.classList.add('show');
+  titleEl.textContent = 'Depleted Prizes (' + visible.length + ' at 0 remaining)';
+  ul.innerHTML = '';
+  var frag = document.createDocumentFragment();
+  visible.forEach(function(d){
+    var li = document.createElement('li');
+    var scopeTag = (state.mode === 'two') ? (' (' + (d.list === 'prizes' ? 'Prize' : 'Person') + ')') : '';
+    li.innerHTML =
+      '<span class="dep-name">' + esc(d.label + scopeTag) + '</span>' +
+      '<button type="button" class="btn sm ghost dep-restock">+1 Restock</button>';
+    li.querySelector('.dep-restock').addEventListener('click', function(){
+      if (spinning) { showToast('Wait for the current spin to finish.'); return; }
+      var target = (d.list === 'prizes') ? state.prizes : state.entries;
+      addEntry(target, d.label, 1);
+      unmarkDepleted(d.list, d.label);
+      refresh(true);
+      showToast('Restocked +1 "' + d.label + '"');
+    });
+    frag.appendChild(li);
+  });
+  ul.appendChild(frag);
+}
+
+function updateAllClaimedBanner(){
+  var banner = $('allClaimedBanner');
+  var btnReset = $('btnStageResetBaseline');
+  if (!banner) return;
+  var show = isAllClaimedState();
+  banner.classList.toggle('show', show);
+  if (btnReset) {
+    var hasBase = !!(state.baseline && Array.isArray(state.baseline.entries) && state.baseline.entries.length > 0);
+    btnReset.style.display = hasBase ? 'inline-flex' : 'none';
+  }
+}
+
 function renderEntries(){
   var two = state.mode === 'two';
-  var totalA = renderOneList(state.entries, 'entryList', 'emptyState', 'segCount');
-  var totalB = renderOneList(state.prizes,  'prizeList', 'emptyState2', 'prizeCount');
+  var baseA = (state.baseline && Array.isArray(state.baseline.entries)) ? state.baseline.entries : null;
+  var baseB = (state.baseline && Array.isArray(state.baseline.prizes)) ? state.baseline.prizes : null;
+  var totalA = renderOneList(state.entries, 'entryList', 'emptyState', 'segCount', baseA);
+  var totalB = renderOneList(state.prizes,  'prizeList', 'emptyState2', 'prizeCount', baseB);
+  renderDepletedList();
+  updateAllClaimedBanner();
 
   $('modeSingle').classList.toggle('on', !two);
   $('modeTwo').classList.toggle('on', two);
@@ -4231,15 +5407,61 @@ function renderHistory(){
   var ol = $('histList');
   ol.innerHTML = '';
   var recent = state.history.slice(-150).reverse();
+  var frag = document.createDocumentFragment();
   recent.forEach(function(h){
     var d = new Date(h.time);
     var li = document.createElement('li');
     li.innerHTML = '<span class="n"></span><span class="w">' + esc(histText(h)) + '</span>' +
                    '<span class="t">' + d.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}) + '</span>';
-    ol.appendChild(li);
+    frag.appendChild(li);
   });
+  ol.appendChild(frag);
   $('histEmpty').style.display = state.history.length ? 'none' : 'block';
   $('histCount').textContent = state.history.length;
+  var undoBtn = $('btnUndoLastSpin');
+  if (undoBtn) undoBtn.disabled = !state.history.length || spinning;
+}
+
+function undoLastSpin(){
+  if (spinning) { showToast('Wait for the current spin to finish.'); return; }
+  if (!state.history.length) { showToast('No spin to undo.'); return; }
+  var last = state.history[state.history.length - 1];
+  askConfirm('Undo the last spin ("' + histText(last) + '") and restore +1 quantity?', function(){
+    var popped = state.history.pop();
+    if (!popped) return;
+    var shouldRestore = (popped.removed !== undefined) ? !!popped.removed : !!state.options.remove;
+    if (shouldRestore) {
+      if (popped.person) {
+        addEntry(state.entries, popped.person, 1);
+        unmarkDepleted('entries', popped.person);
+        if (popped.prize) {
+          addEntry(state.prizes, popped.prize, 1);
+          unmarkDepleted('prizes', popped.prize);
+        }
+      } else if (popped.label) {
+        addEntry(state.entries, popped.label, 1);
+        unmarkDepleted('entries', popped.label);
+      }
+    }
+    lastWinningIdx = -1;
+    renderHistory();
+    refresh(true);
+    showToast('Undid last spin & restored stock: ' + histText(popped));
+  }, { yesLabel: 'Undo Spin' });
+}
+
+if ($('btnUndoLastSpin')) {
+  $('btnUndoLastSpin').addEventListener('click', undoLastSpin);
+}
+if ($('btnStageResetBaseline')) {
+  $('btnStageResetBaseline').addEventListener('click', function(){
+    requireOperatorPin(resetCountsToBaseline, 'Enter your 4-digit kiosk PIN to reset wheel quantities.');
+  });
+}
+if ($('btnStageOpenSetup')) {
+  $('btnStageOpenSetup').addEventListener('click', function(){
+    requireOperatorPin(function(){ openDrawerToTab('segments'); }, 'Enter your 4-digit kiosk PIN to open Setup.');
+  });
 }
 
 function addEntry(list, label, qty){
@@ -4253,9 +5475,12 @@ function addEntry(list, label, qty){
   return true;
 }
 
-function wireAddBox(btnId, labelId, qtyId, getList){
+function wireAddBox(btnId, labelId, qtyId, getList, listKey){
   $(btnId).addEventListener('click', function(){
-    if (addEntry(getList(), $(labelId).value, $(qtyId).value)){
+    if (spinning) { showToast('Wait for the current spin to finish.'); return; }
+    var rawLbl = ($(labelId).value || '').trim();
+    if (addEntry(getList(), rawLbl, $(qtyId).value)){
+      unmarkDepleted(listKey, rawLbl);
       $(labelId).value = ''; $(qtyId).value = 1; $(labelId).focus();
       refresh();
     }
@@ -4264,12 +5489,13 @@ function wireAddBox(btnId, labelId, qtyId, getList){
   $(labelId).addEventListener('keydown', go);
   $(qtyId).addEventListener('keydown', go);
 }
-wireAddBox('btnAdd',  'newLabel',  'newQty',  function(){ return state.entries; });
-wireAddBox('btnAdd2', 'newLabel2', 'newQty2', function(){ return state.prizes;  });
+wireAddBox('btnAdd',  'newLabel',  'newQty',  function(){ return state.entries; }, 'entries');
+wireAddBox('btnAdd2', 'newLabel2', 'newQty2', function(){ return state.prizes;  }, 'prizes');
 
 function wireList(ulId, getList){
   var ul = $(ulId);
   ul.addEventListener('input', function(e){
+    if (spinning) { showToast('Wait for the current spin to finish.'); renderEntries(); return; }
     var i = e.target.getAttribute('data-i');
     if (i === null) return;
     i = +i;
@@ -4283,9 +5509,24 @@ function wireList(ulId, getList){
     draw();
     save();
   });
-  ul.addEventListener('change', function(e){ if (e.target.classList.contains('qty')) refresh(); });
+  ul.addEventListener('change', function(e){
+    if (spinning) { renderEntries(); return; }
+    if (e.target.classList.contains('qty')) refresh();
+  });
   ul.addEventListener('click', function(e){
+    if (e.target.classList.contains('qty-step')) {
+      if (spinning) { showToast('Wait for the current spin to finish.'); return; }
+      var idx = +e.target.getAttribute('data-i');
+      var step = parseInt(e.target.getAttribute('data-step'), 10) || 0;
+      var list = getList();
+      if (!list[idx]) return;
+      var curQ = Math.max(1, parseInt(list[idx].qty, 10) || 1);
+      list[idx].qty = Math.max(1, Math.min(MAX_ITEM_QTY, curQ + step));
+      refresh();
+      return;
+    }
     if (!e.target.classList.contains('del')) return;
+    if (spinning) { showToast('Wait for the current spin to finish.'); return; }
     getList().splice(+e.target.getAttribute('data-i'), 1);
     refresh();
   });
@@ -4294,27 +5535,34 @@ wireList('entryList', function(){ return state.entries; });
 wireList('prizeList', function(){ return state.prizes;  });
 
 function setMode(m){
+  if (spinning) { showToast('Wait for the current spin to finish.'); return; }
   state.mode = m;
-  flow.stage = 1; flow.person = null;
+  flow.stage = 1; flow.person = null; flow.lastStep1SpinId = null;
+  lastWinningIdx = -1;
   refresh();
 }
 $('modeSingle').addEventListener('click', function(){ setMode('single'); });
 $('modeTwo').addEventListener('click', function(){ setMode('two'); });
 
 function loadPresetInto(key, preset){
+  if (spinning) { showToast('Wait for the current spin to finish.'); return; }
   state[key] = preset.map(function(p){ return {label:p.label, qty:p.qty}; });
+  state.depleted = (state.depleted || []).filter(function(d){ return d && d.list !== key; });
   if (!$('titleInput').value.trim()){
     $('titleInput').value = 'Prize Draw';
     state.title = $('titleInput').value;
   }
-  flow.stage = 1; flow.person = null;
+  flow.stage = 1; flow.person = null; flow.lastStep1SpinId = null;
+  lastWinningIdx = -1;
   refresh();
 }
 function clearListOnly(key, what){
+  if (spinning) { showToast('Wait for the current spin to finish.'); return; }
   if (state[key].length) {
      askConfirm('Clear the ' + what + ' list?', function() {
         state[key] = [];
-        flow.stage = 1; flow.person = null;
+        flow.stage = 1; flow.person = null; flow.lastStep1SpinId = null;
+        lastWinningIdx = -1;
         refresh();
      });
   }
@@ -4331,17 +5579,21 @@ $('btnPresetB').addEventListener('click', function(){ loadPresetInto('prizes', P
 $('btnClearB').addEventListener('click', function(){ clearListOnly('prizes', 'prizes'); });
 
 $('btnSwap').addEventListener('click', function(){
+  if (spinning) { showToast('Wait for the current spin to finish.'); return; }
   var t = state.entries; state.entries = state.prizes; state.prizes = t;
-  flow.stage = 1; flow.person = null;
+  flow.stage = 1; flow.person = null; flow.lastStep1SpinId = null;
+  lastWinningIdx = -1;
   refresh();
 });
 
 $('btnClear').addEventListener('click', function(){
+  if (spinning) { showToast('Wait for the current spin to finish.'); return; }
   var n = state.entries.length + state.prizes.length;
   if (n) {
      askConfirm('Remove every entry from both lists?', function(){
-        state.entries = []; state.prizes = [];
-        flow.stage = 1; flow.person = null;
+        state.entries = []; state.prizes = []; state.depleted = [];
+        flow.stage = 1; flow.person = null; flow.lastStep1SpinId = null;
+        lastWinningIdx = -1;
         refresh();
      }, { danger: true, yesLabel: 'Clear All' });
   }
@@ -4408,11 +5660,19 @@ function importTargetKey(){
   return (state.mode === 'two') ? $('importTarget').value : 'entries';
 }
 function applyImport(list, replace){
+  if (spinning) { showToast('Wait for the current spin to finish.'); return; }
   if (!list.length){ status('Nothing to import — no rows were found.', 'err'); return; }
   var key = importTargetKey();
-  if (replace) state[key] = [];
-  list.forEach(function(e){ addEntry(state[key], e.label, e.qty); });
-  flow.stage = 1; flow.person = null;
+  if (replace) {
+    state[key] = [];
+    state.depleted = (state.depleted || []).filter(function(d){ return d && d.list !== key; });
+  }
+  list.forEach(function(e){
+    addEntry(state[key], e.label, e.qty);
+    unmarkDepleted(key, e.label);
+  });
+  flow.stage = 1; flow.person = null; flow.lastStep1SpinId = null;
+  lastWinningIdx = -1;
   if (replace || !state.baseline) {
     lockCurrentAsBaseline(true);
   }
@@ -4466,6 +5726,27 @@ $('optRemoveQuick').addEventListener('change', function(){
   $('optRemove').checked = this.checked;
   refresh();
 });
+
+/* Low-Stock Alert Threshold Control ([OP-3]) */
+if ($('optLowStockThreshold')) {
+  var applyLowStockThreshold = function(val){
+    var n = parseInt(val, 10);
+    state.options.lowStockThreshold = isNaN(n) ? DEFAULT_LOW_STOCK_THRESHOLD : Math.max(0, Math.min(1000, n));
+    $('optLowStockThreshold').value = state.options.lowStockThreshold;
+    renderEntries();
+    save();
+  };
+  $('optLowStockThreshold').addEventListener('change', function(){ applyLowStockThreshold(this.value); });
+  $('optLowStockThreshold').addEventListener('input', function(){
+    if (this.value === '') return;
+    var n = parseInt(this.value, 10);
+    if (!isNaN(n)) {
+      state.options.lowStockThreshold = Math.max(0, Math.min(1000, n));
+      renderEntries();
+      save();
+    }
+  });
+}
 
 /* Adjustable Proportional Slice Cap Controls */
 function applyMaxSlices(val, syncNumberInput){
@@ -4534,6 +5815,7 @@ $('btnShuffle').addEventListener('click', function(){
     var j = randInt(i+1), t = list[i];
     list[i] = list[j]; list[j] = t;
   }
+  lastWinningIdx = -1;
   refresh();
 });
 
@@ -4547,7 +5829,7 @@ function download(name, text, type){
 }
 $('btnExportCfg').addEventListener('click', function(){
   download('wheel-setup.json', JSON.stringify({
-    title:state.title, mode:state.mode, entries:state.entries, prizes:state.prizes, baseline:state.baseline, options:state.options, theme:stripAssetBankLogosFromTheme(state.theme), customThemes:(state.customThemes || []).map(stripAssetBankLogosFromTheme)
+    title:state.title, mode:state.mode, entries:state.entries, prizes:state.prizes, depleted:state.depleted, baseline:state.baseline, options:state.options, theme:stripAssetBankLogosFromTheme(state.theme), customThemes:(state.customThemes || []).map(stripAssetBankLogosFromTheme)
   }, null, 2), 'application/json');
 });
 
@@ -4555,6 +5837,7 @@ $('btnImportCfg').addEventListener('click', function(){ $('cfgInput').click(); }
 $('cfgInput').addEventListener('change', function(){
   var f = this.files[0]; this.value = '';
   if (!f) return;
+  if (spinning) { showToast('Wait for the current spin to finish.'); return; }
   var r = new FileReader();
   r.onload = function(){
     try {
@@ -4562,17 +5845,20 @@ $('cfgInput').addEventListener('change', function(){
       if (!o || !Array.isArray(o.entries)) throw new Error('bad');
       state.entries = cleanList(o.entries);
       state.prizes  = cleanList(o.prizes);
+      state.depleted = Array.isArray(o.depleted) ? cleanDepleted(o.depleted) : [];
       if (o.baseline) state.baseline = o.baseline;
       if (o.mode === 'two' || o.mode === 'single') state.mode = o.mode;
-      if (o.title){ state.title = o.title; $('titleInput').value = o.title; }
+      if (o.title){ state.title = o.title; $('titleInput').value = o.title; $('presentTitle').textContent = o.title; }
       if (o.options) for (var k in state.options) if (o.options[k] !== undefined) state.options[k] = o.options[k];
+      sanitizeOptionsInPlace();
       if (Array.isArray(o.customThemes)) state.customThemes = o.customThemes.map(stripAssetBankLogosFromTheme);
       if (o.theme) applyThemeObject(o.theme, false);
-      flow.stage = 1; flow.person = null;
+      flow.stage = 1; flow.person = null; flow.lastStep1SpinId = null;
+      lastWinningIdx = -1;
       syncOptionInputs();
       renderThemeDropdown(state.theme ? state.theme.id : BUILTIN_THEMES[0].id);
       renderThemePickerCards();
-      refresh();
+      refresh(true);
       showToast('Setup loaded.');
     } catch(e){ showToast('Error: File is not a valid wheel setup.'); }
   };
@@ -4591,12 +5877,22 @@ function syncOptionInputs(){
   var maxS = Math.max(2, Math.min(300, parseInt(state.options.maxSlices, 10) || DEFAULT_MAX_SLICES));
   $('optMaxSlices').value = Math.max(10, Math.min(120, maxS));
   $('optMaxSlicesNum').value = maxS;
+  if ($('optLowStockThreshold')) {
+    var lst = parseInt(state.options.lowStockThreshold, 10);
+    $('optLowStockThreshold').value = isNaN(lst) ? DEFAULT_LOW_STOCK_THRESHOLD : Math.max(0, Math.min(1000, lst));
+  }
   $('themeGlow').checked = state.options.glow;
-  document.querySelector('.wheel-glow').classList.toggle('off', !state.options.glow);
+  if (wheelGlowEl) wheelGlowEl.classList.toggle('off', !state.options.glow);
   syncSoundBtn();
 }
 
 var shot = {kind:'person', person:null, prize:null, color:'#0866FF'};
+
+function hexToRgba(hex, alpha){
+  var m = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(String(hex || ''));
+  if (!m) return 'rgba(8,102,255,' + alpha + ')';
+  return 'rgba(' + parseInt(m[1],16) + ',' + parseInt(m[2],16) + ',' + parseInt(m[3],16) + ',' + alpha + ')';
+}
 
 function openShot(){
   var last = state.history[state.history.length-1];
@@ -4604,7 +5900,7 @@ function openShot(){
 
   shot.person = last.person || null;
   shot.prize  = last.person ? last.prize : (last.label || '');
-  shot.color  = $('winnerPrize').style.color || '#0866FF';
+  shot.color  = $('winnerPrize').style.color || ((state.theme && state.theme.accent) ? state.theme.accent : '#0866FF');
   shot.kind   = last.person ? 'both' : 'person';
 
   $('shotTitle').value = state.title || '';
@@ -4647,24 +5943,40 @@ function drawBigText(c, text, cx, y, maxWidth, startSize, minSize, maxLines, col
   return lines.length * lh;
 }
 
+/* Theme-Aware Winner Card Export with True Logo Aspect Ratio ([UI-3]) */
 function drawShot(){
   var cv = $('shotCanvas'), c = cv.getContext('2d');
   var W = cv.width, H = cv.height, cx = W/2;
+  var t = state.theme || {};
+  var bgMain = t.bgMain || '#0a0a0a';
+  var bgPanel = t.bgPanel || '#141414';
+  var textMain = t.textMain || '#ffffff';
+  var accent = t.accent || '#0866FF';
+  var g1 = t.glowC1 || accent;
+  var g2c = t.glowC2 || t.glowC3 || accent;
+  var isLightPanel = relLum(bgPanel) > 0.45;
+  var mutedInk = isLightPanel ? '#5f6368' : '#8899a6';
+  var dividerCol = isLightPanel ? 'rgba(0,0,0,0.12)' : 'rgba(255,255,255,0.12)';
+  var footerInk = isLightPanel ? '#6e7681' : '#7a8694';
+  var eyebrowInk = (contrastRatio(accent, bgPanel) >= 3.5) ? accent : textMain;
+  var prizeInk = readableInk(shot.color, bgPanel, textMain);
 
-  c.fillStyle = '#0a0a0a'; c.fillRect(0,0,W,H);
+  c.fillStyle = bgMain; c.fillRect(0,0,W,H);
   function blob(x,y,r,col){
     var g = c.createRadialGradient(x,y,0,x,y,r);
     g.addColorStop(0, col); g.addColorStop(1, 'rgba(0,0,0,0)');
     c.fillStyle = g; c.fillRect(0,0,W,H);
   }
-  blob(0, 0, W*0.75, 'rgba(8,102,255,.15)');
-  blob(W*0.06, H*0.6, W*0.55, 'rgba(124,77,255,.10)');
-  blob(W, H, W*0.7, 'rgba(8,102,255,.15)');
+  var blobAlpha = isLightPanel ? 0.14 : 0.18;
+  blob(0, 0, W*0.75, hexToRgba(g1, blobAlpha));
+  blob(W*0.06, H*0.6, W*0.55, hexToRgba(g2c, blobAlpha * 0.72));
+  blob(W, H, W*0.7, hexToRgba(accent, blobAlpha));
 
   var m = 46, r = 26;
   c.save();
-  c.shadowColor = 'rgba(0,0,0,.6)'; c.shadowBlur = 40; c.shadowOffsetY = 10;
-  c.fillStyle = '#141414';
+  c.shadowColor = isLightPanel ? 'rgba(0,0,0,.16)' : 'rgba(0,0,0,.6)';
+  c.shadowBlur = 40; c.shadowOffsetY = 10;
+  c.fillStyle = bgPanel;
   c.beginPath();
   if (c.roundRect) c.roundRect(m, m, W-m*2, H-m*2, r);
   else c.rect(m, m, W-m*2, H-m*2);
@@ -4672,12 +5984,18 @@ function drawShot(){
   c.restore();
 
   if (logoReady){
-    var lw = 190, lh = lw * (265/1195);
-    try { c.drawImage(logoImg, m+42, m+40, lw, lh); } catch(e){}
+    var nw = logoImg.naturalWidth || logoImg.width || 0;
+    var nh = logoImg.naturalHeight || logoImg.height || 0;
+    if (nw > 0 && nh > 0) {
+      var maxW = 210, maxH = 68;
+      var sc = Math.min(maxW / nw, maxH / nh);
+      var lw = Math.round(nw * sc), lh = Math.round(nh * sc);
+      try { c.drawImage(logoImg, m+42, m+36 + Math.round((maxH - lh)/2), lw, lh); } catch(e){}
+    }
   }
 
   var g2 = c.createLinearGradient(W-m-190, 0, W-m-42, 0);
-  g2.addColorStop(0, '#0866FF'); g2.addColorStop(1, '#7C4DFF');
+  g2.addColorStop(0, g1); g2.addColorStop(1, g2c);
   c.fillStyle = g2;
   c.beginPath();
   if (c.roundRect) c.roundRect(W-m-190, m+52, 148, 6, 3); else c.rect(W-m-190, m+52, 148, 6);
@@ -4689,7 +6007,7 @@ function drawShot(){
   c.textAlign = 'center';
   if (title){
     c.font = '700 34px ' + FONT_STACK;
-    c.fillStyle = '#8899a6';
+    c.fillStyle = mutedInk;
     var tl = fitLines(c, title, inner, 2);
     tl.forEach(function(l,i){ c.fillText(l, cx, m+150 + i*40); });
   }
@@ -4699,27 +6017,27 @@ function drawShot(){
 
   if (kind === 'both' && shot.person){
     c.font = '800 15px ' + FONT_STACK;
-    c.fillStyle = '#0866FF'; c.textAlign = 'center';
+    c.fillStyle = eyebrowInk; c.textAlign = 'center';
     c.fillText('W I N N E R', cx, midY - 118);
-    drawBigText(c, shot.person, cx, midY - 62, inner, 68, 30, 2, '#fff');
+    drawBigText(c, shot.person, cx, midY - 62, inner, 68, 30, 2, textMain);
 
     c.font = '800 15px ' + FONT_STACK;
-    c.fillStyle = '#7C4DFF';
+    c.fillStyle = eyebrowInk;
     c.fillText('W I N S', cx, midY + 24);
-    drawBigText(c, shot.prize, cx, midY + 82, inner, 56, 26, 2, shot.color);
+    drawBigText(c, shot.prize, cx, midY + 82, inner, 56, 26, 2, prizeInk);
   } else {
     var eyebrow = (kind === 'product') ? 'T H E   P R I Z E' : 'W I N N E R';
     var name = (kind === 'product') ? (shot.prize || shot.person) : (shot.person || shot.prize);
     c.font = '800 16px ' + FONT_STACK;
-    c.fillStyle = '#0866FF'; c.textAlign = 'center';
+    c.fillStyle = eyebrowInk; c.textAlign = 'center';
     c.fillText(eyebrow, cx, midY - 76);
-    drawBigText(c, name, cx, midY + 6, inner, 92, 34, 2, shot.color);
+    drawBigText(c, name, cx, midY + 6, inner, 92, 34, 2, prizeInk);
   }
 
-  c.fillStyle = '#222';
+  c.fillStyle = dividerCol;
   c.fillRect(m+42, H-m-88, W-m*2-84, 1);
   c.font = '600 19px ' + FONT_STACK;
-  c.fillStyle = '#555';
+  c.fillStyle = footerInk;
   c.textAlign = 'left';
   c.fillText(new Date().toLocaleDateString(undefined, {day:'numeric', month:'long', year:'numeric'}), m+42, H-m-52);
   c.textAlign = 'right';
@@ -4749,17 +6067,45 @@ $('btnShotDownload').addEventListener('click', function(){
   }, 'image/png');
 });
 
+/* Upgraded Audit Log Export: CSV + JSON ([OP-4]) */
 $('btnExportHist').addEventListener('click', function(){
   if (!state.history.length){ showToast('No results to download yet.'); return; }
   var q = function(v){ return '"' + String(v == null ? '' : v).replace(/"/g,'""') + '"'; };
-  var rows = ['Draw,Spin,Winner,Prize,Date,Time'];
+  var rows = ['Draw,Spin,SpinID,Winner,Prize,RemainingAfterSpin,DeviceID,ThemeID,Date,Time,ISO'];
   state.history.forEach(function(h, i){
     var d = new Date(h.time);
-    rows.push([q(state.title), i+1, q(h.person || h.label || ''), q(h.person ? h.prize : ''),
-               q(d.toLocaleDateString()), q(d.toLocaleTimeString())].join(','));
+    rows.push([
+      q(state.title),
+      i+1,
+      q(h.spinId || ''),
+      q(h.person || h.label || ''),
+      q(h.person ? (h.prize || '') : ''),
+      q(h.remainingAfterSpin !== undefined && h.remainingAfterSpin !== null ? h.remainingAfterSpin : ''),
+      q(h.deviceId || getOrCreateDeviceId()),
+      q(h.themeId || ((state.theme && state.theme.id) ? state.theme.id : '')),
+      q(d.toLocaleDateString()),
+      q(d.toLocaleTimeString()),
+      q(h.time || '')
+    ].join(','));
   });
   download('wheel-results.csv', rows.join('\r\n'), 'text/csv;charset=utf-8');
 });
+
+if ($('btnExportHistJson')) {
+  $('btnExportHistJson').addEventListener('click', function(){
+    if (!state.history.length){ showToast('No results to download yet.'); return; }
+    var payload = {
+      exportedAt: new Date().toISOString(),
+      appVersion: APP_VERSION,
+      deviceId: getOrCreateDeviceId(),
+      drawTitle: state.title,
+      mode: state.mode,
+      totalSpins: state.history.length,
+      results: state.history
+    };
+    download('wheel-results.json', JSON.stringify(payload, null, 2), 'application/json');
+  });
+}
 
 $('btnClearHist').addEventListener('click', function(){
   if (!state.history.length) return;
@@ -4768,13 +6114,28 @@ $('btnClearHist').addEventListener('click', function(){
   }, { danger: true, yesLabel: 'Clear History' });
 });
 
-function closeWinner(){ $('winnerOverlay').classList.remove('show'); }
+function closeWinner(){
+  if (spinQueuedTimer) { clearTimeout(spinQueuedTimer); spinQueuedTimer = null; }
+  $('winnerOverlay').classList.remove('show');
+}
 $('btnCloseWinner').addEventListener('click', closeWinner);
-$('btnPrimaryAct').addEventListener('click', function(){ closeWinner(); setTimeout(spin, 220); });
+$('btnPrimaryAct').addEventListener('click', function(){
+  if (spinning || spinQueuedTimer) return;
+  closeWinner();
+  if (activeList().length > 0) {
+    spinQueuedTimer = setTimeout(function(){
+      spinQueuedTimer = null;
+      spin();
+    }, 220);
+  }
+});
 $('winnerOverlay').addEventListener('click', function(e){ if (e.target === this) closeWinner(); });
 
 $('btnSpin').addEventListener('click', spin);
-canvas.addEventListener('click', spin);
+canvas.addEventListener('click', function(){
+  if (spinQueuedTimer) return;
+  spin();
+});
 
 $('titleInput').addEventListener('input', function(){
   state.title = this.value;
@@ -4794,10 +6155,12 @@ $('introOverlay').addEventListener('click', function(e){ if (e.target === this) 
 
 /* Unified Present + Fullscreen Mode */
 function enterPresentMode() {
+  operatorPresentUnlocked = false;
   closePresentMenu();
   $('sidePanel').classList.remove('drawer-open');
   document.body.classList.add('present');
   syncHeaderButtons();
+  acquireWakeLock();
 
   try {
     if (!document.fullscreenElement) {
@@ -4813,6 +6176,7 @@ function enterPresentMode() {
 }
 
 function exitPresentMode() {
+  operatorPresentUnlocked = false;
   closePresentMenu();
   $('sidePanel').classList.remove('drawer-open');
   document.body.classList.remove('present');
@@ -4831,22 +6195,35 @@ function exitPresentMode() {
 }
 
 function togglePresentMode() {
-  if (document.body.classList.contains('present')) exitPresentMode();
-  else enterPresentMode();
+  if (document.body.classList.contains('present')) {
+    requireOperatorPin(exitPresentMode, 'Enter your 4-digit kiosk PIN to exit Present Mode.');
+  } else {
+    enterPresentMode();
+  }
 }
 
 $('btnPresent').addEventListener('click', enterPresentMode);
 
 document.addEventListener('fullscreenchange', function(){
   if (!document.fullscreenElement && document.body.classList.contains('present')) {
-    document.body.classList.remove('present');
-    closePresentMenu();
-    syncHeaderButtons();
+    if (!hasKioskPin()) {
+      document.body.classList.remove('present');
+      closePresentMenu();
+      syncHeaderButtons();
+    }
   }
   setTimeout(sizeCanvas, 250);
 });
 
 document.addEventListener('keydown', function(e){
+  var pinOpen = $('pinOverlay') && $('pinOverlay').classList.contains('show');
+  if (pinOpen) {
+    if (e.key === 'Escape') { e.preventDefault(); closePinModal(); }
+    else if (e.key === 'Backspace') { e.preventDefault(); handlePinKey('back'); }
+    else if (/^\d$/.test(e.key)) { e.preventDefault(); handlePinKey(e.key); }
+    return;
+  }
+
   var tag = (e.target.tagName || '').toLowerCase();
   if (tag === 'input' || tag === 'textarea' || tag === 'select') return;
   var shotOpen    = $('shotOverlay').classList.contains('show');
@@ -4855,7 +6232,7 @@ document.addEventListener('keydown', function(e){
   var saveOpen    = $('saveThemeOverlay').classList.contains('show');
   var confirmOpen = $('confirmOverlay').classList.contains('show');
 
-  if (e.key === 'Escape' && confirmOpen){ $('confirmOverlay').classList.remove('show'); return; }
+  if (e.key === 'Escape' && confirmOpen){ closeConfirmModal(); return; }
   if (e.key === 'Escape' && saveOpen){ closeSaveThemeModal(); return; }
   if (e.key === 'Escape' && pickerOpen){ closeThemePicker(); return; }
   if (e.key === 'Escape' && shotOpen){ $('shotOverlay').classList.remove('show'); return; }
@@ -4867,6 +6244,7 @@ document.addEventListener('keydown', function(e){
 
   if (e.code === 'Space' || e.key === ' '){
     e.preventDefault();
+    if (spinning || spinQueuedTimer) return;
     if ($('winnerOverlay').classList.contains('show')) $('btnPrimaryAct').click();
     else spin();
   } else if (e.key === 'p' || e.key === 'P'){
@@ -4879,7 +6257,7 @@ document.addEventListener('keydown', function(e){
       return;
     }
     if (document.body.classList.contains('present')){ 
-      exitPresentMode();
+      requireOperatorPin(exitPresentMode, 'Enter your 4-digit kiosk PIN to exit Present Mode.');
     }
   }
 });
@@ -4890,9 +6268,15 @@ Array.prototype.forEach.call(document.querySelectorAll('.tab'), function(t){
   });
 });
 
+/* Coalesce resize layout/canvas reallocations to one frame via requestAnimationFrame */
+var resizeRAF = null;
 window.addEventListener('resize', function(){
-  syncHeaderButtons();
-  sizeCanvas();
+  if (resizeRAF) return;
+  resizeRAF = requestAnimationFrame(function(){
+    resizeRAF = null;
+    syncHeaderButtons();
+    sizeCanvas();
+  });
 });
 
 /* ============================================================
@@ -4901,13 +6285,41 @@ window.addEventListener('resize', function(){
 
 var hadLocalSessionOnBoot = false;
 
+function persistLocalOnlySnapshot(){
+  var nowTs = stateUpdatedAt || Date.now();
+  var slimState = {
+    mode: state.mode,
+    title: state.title,
+    entries: state.entries,
+    prizes: state.prizes,
+    depleted: cleanDepleted(state.depleted),
+    baseline: state.baseline,
+    options: state.options,
+    history: (state.history || []).slice(-1000),
+    theme: stripAssetBankLogosFromTheme(state.theme),
+    logos: {
+      hdr: (state.logos && !isAssetBankLogoString(state.logos.hdr)) ? state.logos.hdr : null,
+      center: (state.logos && !isAssetBankLogoString(state.logos.center)) ? state.logos.center : null
+    },
+    customThemes: (state.customThemes || []).map(stripAssetBankLogosFromTheme),
+    updatedAt: nowTs
+  };
+  var env = wrapEnvelope(slimState, stateSeq, nowTs);
+  var envStr = JSON.stringify(env);
+  idbWrite('fullState', env);
+  try { localStorage.setItem(STORE_BAK_KEY, envStr); } catch(e){}
+  try { localStorage.setItem(STORE_KEY, envStr); } catch(e){}
+}
+
 function updateCloudSyncBadge(mode, labelText){
   cloudSyncMode = mode || 'local';
   var badge = $('cloudSyncBadge');
-  if (!badge) return;
-  badge.className = 'sync-pill' + (mode === 'online' ? ' online' : (mode === 'cached' ? ' cached' : ''));
-  badge.textContent = labelText || (mode === 'online' ? '● Cloud Synced' : (mode === 'cached' ? '● Offline Cache' : '● Local Mode'));
+  if (badge) {
+    badge.className = 'sync-pill' + (mode === 'online' ? ' online' : (mode === 'cached' ? ' cached' : ''));
+    badge.textContent = labelText || (mode === 'online' ? '● Cloud Synced' : (mode === 'cached' ? '● Offline Cache' : '● Local Mode'));
+  }
   flashSaveIndicator();
+  updateTelemetryUI();
 }
 
 window.__spinWheelAppHooks = {
@@ -4915,7 +6327,7 @@ window.__spinWheelAppHooks = {
     return getOrCreateDeviceId();
   },
   getKioskBackupPayload: function(){
-    return buildKioskBackupPayload(Date.now());
+    return buildKioskBackupPayload(stateUpdatedAt || Date.now());
   },
   onCloudStatusChange: function(mode, labelText){
     updateCloudSyncBadge(mode, labelText);
@@ -4924,7 +6336,7 @@ window.__spinWheelAppHooks = {
     if (!themeId) return;
     if (removed) {
       deleteThemeLogosFromSWCache(themeId).then(function(){
-        if (state.theme && state.theme.id === themeId) {
+        if (state.theme && state.theme.id === themeId && !(isThemesTabOpen() && themesFormDirty)) {
           var latest = findThemeById(themeId) || getFactoryBuiltinById(themeId);
           if (latest) applyThemeObject(latest, false);
         }
@@ -4939,7 +6351,7 @@ window.__spinWheelAppHooks = {
       return;
     }
     writeThemeLogosToSWCache(themeId, assetData).then(function(){
-      if (state.theme && state.theme.id === themeId) {
+      if (state.theme && state.theme.id === themeId && !(isThemesTabOpen() && themesFormDirty)) {
         var cur = findThemeById(themeId) || state.theme;
         cur.hasCustomHdrLogo = !!assetData.hdr;
         cur.hasCustomCenterLogo = !!assetData.center;
@@ -4967,31 +6379,28 @@ window.__spinWheelAppHooks = {
 
     var activeId = (state.theme && state.theme.id) ? state.theme.id : defaultThemeId();
     var resolvedActive = findThemeById(activeId);
+    var protectActiveEdits = isThemesTabOpen() && themesFormDirty;
+
     if (resolvedActive) {
-      // Apply remote theme updates in real time without resetting wheel spin angle
-      if (!spinning && (!pendingLogoUploads.hdr && !pendingLogoUploads.center)) {
+      // Apply remote theme updates in real time without resetting spin angle or clobbering active unsaved edits ([OP-5])
+      if (!spinning && !pendingLogoUploads.hdr && !pendingLogoUploads.center && !protectActiveEdits) {
         applyThemeObject(resolvedActive, false);
         renderEntries();
         draw();
+      } else if (protectActiveEdits) {
+        showToast('Remote theme update received (unsaved edits preserved)');
       }
-    } else if (BUILTIN_THEMES[0]) {
+    } else if (BUILTIN_THEMES[0] && !protectActiveEdits) {
       applyThemeObject(BUILTIN_THEMES[0], false);
       renderEntries();
       draw();
     }
 
-    renderThemeDropdown(state.theme ? state.theme.id : BUILTIN_THEMES[0].id);
+    renderThemeDropdown(state.theme ? state.theme.id : defaultThemeId());
     renderThemePickerCards();
 
-    // Persist updated customThemes list locally without triggering a redundant cloud write loop
-    try {
-      var raw = localStorage.getItem(STORE_KEY);
-      var obj = raw ? JSON.parse(raw) : {};
-      obj.customThemes = state.customThemes;
-      obj.theme = stripAssetBankLogosFromTheme(state.theme);
-      localStorage.setItem(STORE_KEY, JSON.stringify(obj));
-      idbWrite('fullState', obj);
-    } catch(e){}
+    // Persist updated customThemes list inside a valid checksummed v2 envelope without triggering a cloud write loop
+    persistLocalOnlySnapshot();
   },
   onRemoteInstancesSnapshot: function(remoteList){
     if (!Array.isArray(remoteList)) return;
@@ -5002,33 +6411,39 @@ window.__spinWheelAppHooks = {
     renderSavedInstances();
   },
   onRemoteKioskRecoveryCandidate: function(backup){
-    if (hadLocalSessionOnBoot || !backup || !Array.isArray(backup.entries) || !backup.entries.length) return;
+    if (!backup || !Array.isArray(backup.entries) || !backup.entries.length) return false;
+    var cloudEnv = {
+      seq: Number(backup.seq) || 0,
+      updatedAt: Number(backup.updatedAt) || 0
+    };
+    var localEnv = {
+      seq: Number(stateSeq) || 0,
+      updatedAt: Number(stateUpdatedAt) || 0
+    };
+    if (hadLocalSessionOnBoot && !isEnvelopeNewer(cloudEnv, localEnv)) {
+      return false;
+    }
+
     hadLocalSessionOnBoot = true;
-    state.entries = cleanList(backup.entries);
-    state.prizes  = cleanList(backup.prizes);
-    if (backup.baseline) state.baseline = backup.baseline;
-    if (backup.mode === 'two' || backup.mode === 'single') state.mode = backup.mode;
-    if (backup.title) {
-      state.title = backup.title;
-      $('titleInput').value = state.title;
-      $('presentTitle').textContent = state.title;
-    }
-    if (backup.options) {
-      for (var k in state.options) {
-        if (backup.options[k] !== undefined) state.options[k] = backup.options[k];
-      }
-    }
-    if (Array.isArray(backup.history)) state.history = backup.history;
+    applyRecoveredSnapshot(backup, cloudEnv.seq, cloudEnv.updatedAt);
+    $('titleInput').value = state.title;
+    $('presentTitle').textContent = state.title;
     if (backup.themeId) {
       var th = findThemeById(backup.themeId);
       if (th) applyThemeObject(th, false);
     }
     syncOptionInputs();
-    renderThemeDropdown(state.theme ? state.theme.id : BUILTIN_THEMES[0].id);
-    refresh(false);
+    renderThemeDropdown(state.theme ? state.theme.id : defaultThemeId());
+    buildSegments();
+    renderEntries();
+    draw();
     renderHistory();
     renderThemePickerCards();
+    updateBaselineUI();
+    persistLocalOnlySnapshot();
+    writeHashSnapshot();
     showToast('Recovered kiosk session from cloud backup!');
+    return true;
   }
 };
 
@@ -5047,7 +6462,7 @@ function registerAppServiceWorker(){
     .catch(function(){});
 
   navigator.serviceWorker.addEventListener('controllerchange', function(){
-    if (state.theme) {
+    if (state.theme && !(isThemesTabOpen() && themesFormDirty)) {
       applyThemeObject(state.theme, false);
     }
   });
@@ -5059,7 +6474,7 @@ function runStartupInit() {
   if (startupDone) return;
   startupDone = true;
 
-  // Recover persistent deviceId & local saved instances
+  // Recover persistent deviceId, PIN hash & local saved instances
   idbRead('deviceId', function(savedDevId){
     if (savedDevId && typeof savedDevId === 'string') {
       var curLocal = null;
@@ -5070,6 +6485,16 @@ function runStartupInit() {
       }
     }
     getOrCreateDeviceId();
+    updateTelemetryUI();
+  });
+
+  idbRead('kioskPinHash', function(savedPinHash){
+    if (!hasKioskPin() && savedPinHash && typeof savedPinHash === 'string' && savedPinHash.indexOf('pin2_') === 0) {
+      kioskPinHash = savedPinHash;
+      try { localStorage.setItem(PIN_KEY, savedPinHash); } catch(e){}
+      updatePinStatusUI();
+      updateTelemetryUI();
+    }
   });
 
   loadLocalSavedInstances();
@@ -5088,7 +6513,7 @@ function runStartupInit() {
           writeThemeLogosToSWCache(tid, idbAssets[tid]);
         }
       }
-      if (state.theme && themeCustomAssets[state.theme.id]) {
+      if (state.theme && themeCustomAssets[state.theme.id] && !(isThemesTabOpen() && themesFormDirty)) {
         applyThemeObject(state.theme, false);
       }
     }
@@ -5110,50 +6535,52 @@ function runStartupInit() {
       }
     } else if (!state.theme) {
       applyThemeObject(BUILTIN_THEMES[0] || getNeutralFallbackTheme(), false);
-    } else {
-      var latestTheme = findThemeById(state.theme.id) || BUILTIN_THEMES[0] || getNeutralFallbackTheme();
-      applyThemeObject(latestTheme, false);
+    }
+
+    // Commit any interrupted mid-spin journal deterministically before first interaction
+    var recoveredPending = recoverPendingSpinIfAny();
+    if (!recoveredPending) {
+      idbRead('pendingSpin', function(idbPending){
+        if (idbPending) recoverPendingSpinIfAny(idbPending);
+      });
     }
 
     $('titleInput').value = state.title;
     $('presentTitle').textContent = state.title;
     syncOptionInputs();
     renderThemeDropdown(state.theme ? state.theme.id : defaultThemeId());
-    buildSegments();
     renderEntries();
     renderHistory();
     renderSavedInstances();
     updateBaselineUI();
     syncHeaderButtons();
-    sizeCanvas();
+    updateTelemetryUI();
+    acquireWakeLock();
 
     $('introOverlay').classList.remove('show');
     openThemePicker();
     registerAppServiceWorker();
 
-    // Also check IndexedDB in case localStorage was cleared by the browser but IndexedDB survived
-    idbRead('fullState', function(idbState){
-      if (!idbState || !Array.isArray(idbState.entries)) return;
-      var localRaw = null;
-      try { localRaw = localStorage.getItem(LIVE_INV_KEY); } catch(e){}
-      if (!localRaw && !loadedSync) {
+    // Check IndexedDB: recover if localStorage was wiped OR if IndexedDB holds a strictly newer valid snapshot
+    idbRead('fullState', function(idbRaw){
+      var idbEnv = unwrapEnvelope(idbRaw);
+      if (!idbEnv || !idbEnv.data || !Array.isArray(idbEnv.data.entries)) return;
+      var localEnv = { seq: stateSeq, updatedAt: stateUpdatedAt };
+      if (!hadLocalSessionOnBoot || isEnvelopeNewer(idbEnv, localEnv)) {
         hadLocalSessionOnBoot = true;
-        state.entries = cleanList(idbState.entries);
-        state.prizes  = cleanList(idbState.prizes);
-        if (idbState.baseline) state.baseline = idbState.baseline;
-        if (idbState.title) { state.title = idbState.title; $('titleInput').value = state.title; $('presentTitle').textContent = state.title; }
-        if (Array.isArray(idbState.history)) state.history = idbState.history;
-        if (Array.isArray(idbState.customThemes)) {
-          state.customThemes = idbState.customThemes
-            .map(stripAssetBankLogosFromTheme)
-            .filter(function(ct){ return ct && ct.id && !(ct.isFolderOverride && !isBuiltinId(ct.id)); });
-        }
-        var recoveredTheme = (idbState.theme && idbState.theme.id && findThemeById(idbState.theme.id)) || BUILTIN_THEMES[0] || getNeutralFallbackTheme();
+        applyRecoveredSnapshot(idbEnv.data, idbEnv.seq, idbEnv.updatedAt);
+        $('titleInput').value = state.title;
+        $('presentTitle').textContent = state.title;
+        var recoveredTheme = (idbEnv.data.theme && idbEnv.data.theme.id && findThemeById(idbEnv.data.theme.id)) || BUILTIN_THEMES[0] || getNeutralFallbackTheme();
         applyThemeObject(recoveredTheme, false);
+        syncOptionInputs();
         renderThemeDropdown(state.theme ? state.theme.id : defaultThemeId());
         refresh(false);
         renderHistory();
         renderThemePickerCards();
+        idbRead('pendingSpin', function(idbPending){
+          if (idbPending) recoverPendingSpinIfAny(idbPending);
+        });
         showToast('Recovered session from IndexedDB backup!');
       }
     });
@@ -5188,11 +6615,49 @@ function hasValidFirebaseConfig(cfg) {
   );
 }
 
+function importWithTimeout(url, timeoutMs) {
+  return new Promise((resolve, reject) => {
+    const timer = setTimeout(() => reject(new Error('Firebase SDK import timeout')), timeoutMs);
+    import(url).then(
+      (mod) => { clearTimeout(timer); resolve(mod); },
+      (err) => { clearTimeout(timer); reject(err); }
+    );
+  });
+}
+
+const FIREBASE_MOD_URLS = [
+  'https://www.gstatic.com/firebasejs/13.4.0/firebase-app.js',
+  'https://www.gstatic.com/firebasejs/13.4.0/firebase-auth.js',
+  'https://www.gstatic.com/firebasejs/13.4.0/firebase-firestore.js'
+];
+
+async function areFirebaseModulesCached() {
+  if (!window.caches || !window.caches.match) return false;
+  try {
+    const matches = await Promise.all(FIREBASE_MOD_URLS.map((u) => window.caches.match(u)));
+    return matches.every(Boolean);
+  } catch (_) {
+    return false;
+  }
+}
+
+let firebaseSyncInitialized = false;
 async function initFirebaseSync() {
+  if (firebaseSyncInitialized) return;
   // Graceful fallback to local-only mode if FIREBASE_CONFIG is empty
   if (!hasValidFirebaseConfig(FIREBASE_CONFIG)) {
     if (hooks) hooks.onCloudStatusChange('local', '● Local Mode');
     return;
+  }
+
+  // In cold airplane mode before Firebase SDK modules have ever been cached, skip import cleanly and retry on reconnect
+  if (!navigator.onLine) {
+    const cached = await areFirebaseModulesCached();
+    if (!cached) {
+      if (hooks) hooks.onCloudStatusChange('cached', '● Offline Mode');
+      window.addEventListener('online', () => { initFirebaseSync(); }, { once: true });
+      return;
+    }
   }
 
   let initializeApp;
@@ -5216,15 +6681,13 @@ async function initFirebaseSync() {
         onSnapshot,
         serverTimestamp
       }
-    ] = await Promise.all([
-      import('https://www.gstatic.com/firebasejs/13.4.0/firebase-app.js'),
-      import('https://www.gstatic.com/firebasejs/13.4.0/firebase-auth.js'),
-      import('https://www.gstatic.com/firebasejs/13.4.0/firebase-firestore.js')
-    ]);
+    ] = await Promise.all(FIREBASE_MOD_URLS.map((u) => importWithTimeout(u, 4000)));
   } catch (_) {
-    if (hooks) hooks.onCloudStatusChange('local', '● Local (Offline)');
+    if (hooks) hooks.onCloudStatusChange(navigator.onLine ? 'local' : 'cached', navigator.onLine ? '● Local Mode' : '● Offline Mode');
+    window.addEventListener('online', () => { initFirebaseSync(); }, { once: true });
     return;
   }
+  firebaseSyncInitialized = true;
 
   let app, db, auth;
   try {
@@ -5247,9 +6710,11 @@ async function initFirebaseSync() {
   let backupTimer = null;
   let listenersStarted = false;
   let isAuthed = false;
+  let initialCloudCheckDone = false;
+  let pendingLocalSync = false;
 
   async function flushKioskBackupNow() {
-    if (!db || !isAuthed || !hooks) return;
+    if (!db || !isAuthed || !hooks || !initialCloudCheckDone) return;
     try {
       const payload = hooks.getKioskBackupPayload();
       if (!payload || !payload.deviceId) return;
@@ -5265,6 +6730,10 @@ async function initFirebaseSync() {
   window.__spinWheelCloud = {
     syncKioskBackup(immediate) {
       if (!db || !isAuthed) return;
+      if (!initialCloudCheckDone) {
+        pendingLocalSync = true;
+        return;
+      }
       if (backupTimer) {
         clearTimeout(backupTimer);
         backupTimer = null;
@@ -5330,7 +6799,7 @@ async function initFirebaseSync() {
     const refreshOnlineBadge = () => {
       if (!hooks) return;
       if (!isAuthed) {
-        hooks.onCloudStatusChange('local', '● Local Mode');
+        hooks.onCloudStatusChange(navigator.onLine ? 'local' : 'cached', navigator.onLine ? '● Local Mode' : '● Offline Mode');
       } else if (navigator.onLine) {
         hooks.onCloudStatusChange('online', '● Cloud Synced');
       } else {
@@ -5341,7 +6810,7 @@ async function initFirebaseSync() {
     window.addEventListener('offline', refreshOnlineBadge);
     refreshOnlineBadge();
 
-    // 1. Global Synced Theme Assets (compressed logos -> SW Cache /themes/{themeId}/*.png)
+    // 1. Global Synced Theme Assets (compressed logos -> SW Cache ./themes/{themeId}/*.png)
     onSnapshot(
       collection(db, 'theme_assets'),
       (snap) => {
@@ -5392,20 +6861,34 @@ async function initFirebaseSync() {
       () => {}
     );
 
-    // 4. Isolated Device Crash-Recovery Check (only reads THIS device's own backup if local stores were empty)
+    // 4. Isolated Device Crash-Recovery Check: ALWAYS read THIS device's cloud backup BEFORE flushing local state
     if (hooks) {
       const devId = hooks.getDeviceId();
       if (devId) {
         getDoc(doc(db, 'kiosk_backups', devId))
           .then((docSnap) => {
+            let restoredFromCloud = false;
             if (docSnap.exists()) {
-              hooks.onRemoteKioskRecoveryCandidate(docSnap.data());
-            } else {
+              restoredFromCloud = !!hooks.onRemoteKioskRecoveryCandidate(docSnap.data());
+            }
+            initialCloudCheckDone = true;
+            if (!restoredFromCloud || pendingLocalSync) {
+              pendingLocalSync = false;
               flushKioskBackupNow();
             }
           })
-          .catch(() => {});
+          .catch(() => {
+            initialCloudCheckDone = true;
+            if (pendingLocalSync) {
+              pendingLocalSync = false;
+              flushKioskBackupNow();
+            }
+          });
+      } else {
+        initialCloudCheckDone = true;
       }
+    } else {
+      initialCloudCheckDone = true;
     }
   }
 
@@ -5413,12 +6896,16 @@ async function initFirebaseSync() {
     if (user) {
       isAuthed = true;
       startRealtimeSyncListeners();
-      flushKioskBackupNow();
     }
   });
 
   async function ensureAnonymousSignIn() {
     if (auth.currentUser) return;
+    // Skip network sign-in call while completely offline to keep airplane-mode boot error-free
+    if (!navigator.onLine) {
+      if (hooks) hooks.onCloudStatusChange('cached', '● Offline Mode');
+      return;
+    }
     try {
       await signInAnonymously(auth);
     } catch (_) {
