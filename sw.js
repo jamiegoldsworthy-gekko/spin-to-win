@@ -4,15 +4,18 @@
    Strategies:
    - ./index.html / navigation : Network-First (offline fallback to Shell Cache)
    - ./fonts/*                 : Precached on install + Cache-First
-   - ./themes/*                : Cache-First for Firestore-synced custom logos,
-                                 Stale-While-Revalidate for static theme files
+   - ./themes/*                : Network-First (cache: 'no-store') when online with
+                                 automatic pruning of deleted folder themes when
+                                 ./themes/index.json refreshes; offline cache fallback;
+                                 preserves Firestore-synced custom theme_assets logos
    - App icons / manifest /
      Firebase SDK modules      : Precached + Cache-First
    ============================================================ */
 
-const SHELL_CACHE  = 'spin-wheel-shell-v2';
-const FONTS_CACHE  = 'spin-wheel-fonts-v2';
-const THEMES_CACHE = 'spin-wheel-themes-v2';
+const APP_VERSION  = 'v1.1.0';
+const SHELL_CACHE  = `spin-wheel-shell-${APP_VERSION}`;
+const FONTS_CACHE  = `spin-wheel-fonts-${APP_VERSION}`;
+const THEMES_CACHE = `spin-wheel-themes-${APP_VERSION}`;
 const VALID_CACHES = [SHELL_CACHE, FONTS_CACHE, THEMES_CACHE];
 
 function getScopeBase() {
@@ -37,6 +40,20 @@ function relFromScope(reqUrlStr) {
     return './' + u.pathname.slice(scopePath.length);
   }
   return null;
+}
+
+function parseThemeIndexIds(data) {
+  const rawList = Array.isArray(data)
+    ? data
+    : (data && Array.isArray(data.themes) ? data.themes : []);
+  const ids = [];
+  for (const item of rawList) {
+    const id = (typeof item === 'string')
+      ? item.trim()
+      : (item && typeof item === 'object' && typeof item.id === 'string' ? item.id.trim() : '');
+    if (id) ids.push(id);
+  }
+  return ids;
 }
 
 const SHELL_REL_URLS = [
@@ -85,7 +102,7 @@ async function precacheOptionalRelUrls(cache, relUrls) {
     relUrls.map(async (rel) => {
       try {
         const fullUrl = scopeUrl(rel);
-        const res = await fetch(fullUrl, { cache: 'no-cache' });
+        const res = await fetch(fullUrl, { cache: 'no-store' });
         if (isValidAssetResponse(res, rel)) {
           await cache.put(fullUrl, res);
         }
@@ -96,32 +113,61 @@ async function precacheOptionalRelUrls(cache, relUrls) {
   );
 }
 
+/* Purge cached ./themes/<old_id>/* entries removed from ./themes/index.json
+   while preserving Firestore-synced custom theme_assets logos */
+async function pruneDeletedThemesFromCache(themeCache, activeIds) {
+  const activeSet = new Set(activeIds);
+  const cachedRequests = await themeCache.keys();
+  await Promise.allSettled(
+    cachedRequests.map(async (cachedReq) => {
+      const rel = relFromScope(cachedReq.url);
+      if (!rel || !rel.startsWith('./themes/') || rel === './themes/index.json') return;
+
+      // Match ./themes/<folderId>/<file>
+      const rest = rel.slice('./themes/'.length);
+      const slashIdx = rest.indexOf('/');
+      if (slashIdx <= 0) return;
+      const folderId = decodeURIComponent(rest.slice(0, slashIdx));
+
+      // Preserve active custom theme IDs and Firestore-uploaded logos
+      if (folderId.startsWith('custom_')) return;
+      const cachedRes = await themeCache.match(cachedReq);
+      if (cachedRes && cachedRes.headers.get('X-Theme-Source') === 'firestore') return;
+
+      if (!activeSet.has(folderId)) {
+        await themeCache.delete(cachedReq);
+      }
+    })
+  );
+}
+
 async function warmThemesCache() {
   const themeCache = await caches.open(THEMES_CACHE);
   try {
     const idxUrl = scopeUrl('./themes/index.json');
-    const idxRes = await fetch(idxUrl, { cache: 'no-cache' });
+    const idxRes = await fetch(idxUrl, { cache: 'no-store' });
     if (!isValidAssetResponse(idxRes, './themes/index.json')) return;
     await themeCache.put(idxUrl, idxRes.clone());
 
     const data = await idxRes.json();
-    const ids = Array.isArray(data) ? data : (data && Array.isArray(data.themes) ? data.themes : []);
+    const ids = parseThemeIndexIds(data);
+    await pruneDeletedThemesFromCache(themeCache, ids);
 
     const relAssets = [];
     for (const id of ids) {
-      if (!id || typeof id !== 'string') continue;
-      relAssets.push(`./themes/${id}/theme.json`);
-      relAssets.push(`./themes/${id}/header-logo.png`);
-      relAssets.push(`./themes/${id}/center-logo.png`);
+      const enc = encodeURIComponent(id);
+      relAssets.push(`./themes/${enc}/theme.json`);
+      relAssets.push(`./themes/${enc}/header-logo.png`);
+      relAssets.push(`./themes/${enc}/center-logo.png`);
+      relAssets.push(`./themes/${enc}/centre-logo.png`);
     }
 
     await Promise.allSettled(
       relAssets.map(async (rel) => {
         const fullUrl = scopeUrl(rel);
-        // Never overwrite custom logos synced from Firestore
         const existing = await themeCache.match(fullUrl, { ignoreSearch: true });
         if (existing && existing.headers.get('X-Theme-Source') === 'firestore') return;
-        const res = await fetch(fullUrl, { cache: 'no-cache' });
+        const res = await fetch(fullUrl, { cache: 'no-store' });
         if (isValidAssetResponse(res, rel)) {
           await themeCache.put(fullUrl, res);
         }
@@ -140,16 +186,14 @@ self.addEventListener('install', (event) => {
         caches.open(FONTS_CACHE)
       ]);
 
-      // Precache core app shell using subpath-resolved URLs
       await Promise.allSettled(
         SHELL_REL_URLS.map(async (rel) => {
           const fullUrl = scopeUrl(rel);
-          const res = await fetch(fullUrl, { cache: 'no-cache' });
+          const res = await fetch(fullUrl, { cache: 'no-store' });
           if (res && res.ok) await shellCache.put(fullUrl, res);
         })
       );
 
-      // Precache Firebase modular SDK for 100% offline boot
       await Promise.allSettled(
         FIREBASE_SDK_URLS.map(async (url) => {
           const res = await fetch(url, { mode: 'cors' });
@@ -157,7 +201,6 @@ self.addEventListener('install', (event) => {
         })
       );
 
-      // Precache dropped ./fonts/*.ttf files & ./themes/* folders
       await Promise.all([
         precacheOptionalRelUrls(fontCache, FONT_PRECACHE_REL_URLS),
         warmThemesCache()
@@ -253,7 +296,7 @@ self.addEventListener('fetch', (event) => {
       (async () => {
         const shellCache = await caches.open(SHELL_CACHE);
         try {
-          const netRes = await fetch(req);
+          const netRes = await fetch(req, { cache: 'no-store' });
           if (netRes && netRes.ok) {
             await Promise.all([
               shellCache.put(shellRootUrl, netRes.clone()),
@@ -298,40 +341,46 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // 4. ./themes/* -> Cache-First for Firestore-synced logos; Stale-While-Revalidate for static theme files
+  // 4. ./themes/* -> Network-First (cache: 'no-store') when online + prune deleted themes;
+  //    falls back to cache when offline; preserves Firestore-uploaded custom theme_assets logos
   if (rel.startsWith('./themes/')) {
     event.respondWith(
       (async () => {
         const themeCache = await caches.open(THEMES_CACHE);
         const cached = await themeCache.match(canonicalUrl, { ignoreSearch: true });
 
-        // Custom logos synced via Firestore & written into SW cache take priority offline & online
+        // Locally uploaded / Firestore-synced custom logos take priority online & offline
         if (cached && cached.headers.get('X-Theme-Source') === 'firestore') {
           return cached;
         }
 
-        const networkFetch = (async () => {
-          try {
-            const netRes = await fetch(canonicalUrl, { cache: 'no-cache' });
-            if (isValidAssetResponse(netRes, rel)) {
-              const latestCached = await themeCache.match(canonicalUrl, { ignoreSearch: true });
-              if (!latestCached || latestCached.headers.get('X-Theme-Source') !== 'firestore') {
-                await themeCache.put(canonicalUrl, netRes.clone());
-              }
+        try {
+          const netRes = await fetch(canonicalUrl, { cache: 'no-store' });
+          if (isValidAssetResponse(netRes, rel)) {
+            await themeCache.put(canonicalUrl, netRes.clone());
+            if (rel === './themes/index.json') {
+              const idxClone = netRes.clone();
+              event.waitUntil(
+                idxClone
+                  .json()
+                  .then((data) => pruneDeletedThemesFromCache(themeCache, parseThemeIndexIds(data)))
+                  .catch(() => {})
+              );
             }
             return netRes;
-          } catch (_) {
-            return null;
           }
-        })();
-
-        if (cached) {
-          event.waitUntil(networkFetch);
-          return cached;
+          if (netRes && netRes.status === 404) {
+            // If static asset was removed on GitHub, remove stale non-firestore cache entry
+            if (cached && cached.headers.get('X-Theme-Source') !== 'firestore') {
+              await themeCache.delete(canonicalUrl);
+            }
+            return netRes;
+          }
+        } catch (_) {
+          // Offline — fall through to cached response below
         }
 
-        const fresh = await networkFetch;
-        return fresh || new Response('', { status: 404, statusText: 'Theme Asset Not Available Offline' });
+        return cached || new Response('', { status: 404, statusText: 'Theme Asset Not Available Offline' });
       })()
     );
     return;

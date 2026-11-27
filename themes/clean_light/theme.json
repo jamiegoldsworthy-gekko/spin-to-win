@@ -1,7 +1,6 @@
 {
   "id": "clean_light",
   "name": "Clean Light",
-  "logoPreset": "clean_light",
   "bgMain": "#f0f2f5",
   "bgPanel": "#ffffff",
   "textMain": "#1c1e21",
@@ -14,6 +13,8 @@
   "segTextColor": "#ffffff",
   "segFontScale": 1.0,
   "stageLogo": true,
+  "hdrScale": 1.0,
+  "centerScale": 1.0,
   "glow": false,
   "glowC1": "#0866FF",
   "glowC2": "#34A853",
@@ -25,11 +26,5 @@
   "confC1": "#0866FF",
   "confC2": "#34A853",
   "confC3": "#FBBC04",
-  "confC4": "#EA4335",
-  "hdrScale": 1.0,
-  "centerScale": 1.0,
-  "logos": {
-    "hdr": "./themes/clean_light/header-logo.png",
-    "center": "./themes/clean_light/center-logo.png"
-  }
+  "confC4": "#EA4335"
 }

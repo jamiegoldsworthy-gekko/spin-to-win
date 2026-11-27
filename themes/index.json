@@ -1,8 +1,6 @@
-{
-  "themes": [
-    "googlebook",
-    "chromebook",
-    "clean_light",
-    "gold_luxe"
-  ]
-}
+[
+  "googlebook",
+  "chromebook",
+  "clean_light",
+  "gold_luxe"
+]

@@ -1,7 +1,6 @@
 {
   "id": "gold_luxe",
   "name": "Gold Luxe",
-  "logoPreset": "gold_luxe",
   "bgMain": "#110d00",
   "bgPanel": "#1a1400",
   "textMain": "#ffd700",
@@ -14,6 +13,8 @@
   "segTextColor": "#ffffff",
   "segFontScale": 1.0,
   "stageLogo": true,
+  "hdrScale": 1.0,
+  "centerScale": 1.0,
   "glow": true,
   "glowC1": "#ffd700",
   "glowC2": "#ffaa00",
@@ -25,11 +26,5 @@
   "confC1": "#ffd700",
   "confC2": "#ffaa00",
   "confC3": "#ff8c00",
-  "confC4": "#b8860b",
-  "hdrScale": 1.0,
-  "centerScale": 1.0,
-  "logos": {
-    "hdr": "./themes/gold_luxe/header-logo.png",
-    "center": "./themes/gold_luxe/center-logo.png"
-  }
+  "confC4": "#b8860b"
 }

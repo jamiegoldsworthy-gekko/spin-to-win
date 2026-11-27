@@ -1,7 +1,6 @@
 {
   "id": "googlebook",
   "name": "Googlebook",
-  "logoPreset": "googlebook",
   "bgMain": "#0a0a0a",
   "bgPanel": "#141414",
   "textMain": "#ffffff",
@@ -14,6 +13,8 @@
   "segTextColor": "#ffffff",
   "segFontScale": 1.0,
   "stageLogo": true,
+  "hdrScale": 1.0,
+  "centerScale": 1.0,
   "glow": true,
   "glowC1": "#4285F4",
   "glowC2": "#34A853",
@@ -25,11 +26,5 @@
   "confC1": "#4285F4",
   "confC2": "#34A853",
   "confC3": "#FBBC04",
-  "confC4": "#FBBC04",
-  "hdrScale": 1.0,
-  "centerScale": 1.0,
-  "logos": {
-    "hdr": "./themes/googlebook/header-logo.png",
-    "center": "./themes/googlebook/center-logo.png"
-  }
+  "confC4": "#FBBC04"
 }

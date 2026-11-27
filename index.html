@@ -1603,9 +1603,10 @@ var LEGACY_STORE_KEY = 'spin-wheel-v2';
 var LIVE_INV_KEY = 'spin-wheel-live-inventory-v4'; // Dedicated ultra-lightweight inventory store
 var BASELINE_KEY = 'spin-wheel-baseline-v4';       // Starting baseline counts for event reset
 var LAST_THEME_KEY = STORE_KEY + ':lastThemeId';
+var APP_VERSION = 'v1.1.0';
 var DEVICE_ID_KEY = 'spin-wheel-device-id-v1';     // Isolated per-kiosk device identifier
 var INSTANCES_LOCAL_KEY = 'spin-wheel-instances-v1';
-var THEMES_SW_CACHE = 'spin-wheel-themes-v2';
+var THEMES_SW_CACHE = 'spin-wheel-themes-' + APP_VERSION;
 var APP_DIR_URL = new URL('./', window.location.href).href;
 
 function toRelativeAssetPath(p) {
@@ -1633,85 +1634,115 @@ var PRESET = [
 var NAME_PRESET = ['Entrant 1','Entrant 2','Entrant 3','Entrant 4','Entrant 5','Entrant 6']
   .map(function(n){ return {label:n, qty:1}; });
 
+function titleCaseFromId(id) {
+  return String(id || 'Default')
+    .replace(/[_-]+/g, ' ')
+    .trim()
+    .replace(/\b\w/g, function(ch){ return ch.toUpperCase(); }) || 'Default';
+}
+
+function parseThemeIndexEntries(idxData) {
+  var rawList = Array.isArray(idxData)
+    ? idxData
+    : (idxData && Array.isArray(idxData.themes) ? idxData.themes : []);
+  var out = [];
+  for (var i = 0; i < rawList.length; i++) {
+    var item = rawList[i];
+    var id = (typeof item === 'string')
+      ? item.trim()
+      : (item && typeof item === 'object' && typeof item.id === 'string' ? item.id.trim() : '');
+    if (id && out.indexOf(id) === -1) out.push(id);
+  }
+  return out;
+}
+
 function normalizeThemeFolderEntry(raw, folderId) {
-  var id = (raw && raw.id) ? String(raw.id) : String(folderId);
-  var copy = raw ? JSON.parse(JSON.stringify(raw)) : { id: id, name: id };
+  var fallbackId = folderId ? String(folderId).trim() : '';
+  var id = (raw && typeof raw.id === 'string' && raw.id.trim()) ? raw.id.trim() : (fallbackId || 'default');
+  var copy = (raw && typeof raw === 'object') ? JSON.parse(JSON.stringify(raw)) : {};
   copy.id = id;
+  copy.name = (typeof copy.name === 'string' && copy.name.trim()) ? copy.name.trim() : titleCaseFromId(id);
   copy.logoPreset = copy.logoPreset || id;
   if (!copy.logos || typeof copy.logos !== 'object') copy.logos = {};
-  copy.logos.hdr = toRelativeAssetPath(copy.logos.hdr) || ('./themes/' + id + '/header-logo.png');
-  copy.logos.center = toRelativeAssetPath(copy.logos.center) || ('./themes/' + id + '/center-logo.png');
+  copy.logos.hdr = toRelativeAssetPath(copy.logos.hdr) || ('./themes/' + encodeURIComponent(id) + '/header-logo.png');
+  copy.logos.center = toRelativeAssetPath(copy.logos.center) || ('./themes/' + encodeURIComponent(id) + '/center-logo.png');
   return copy;
+}
+
+/* Neutral emergency fallback used ONLY if ./themes/index.json cannot be loaded at all */
+function getNeutralFallbackTheme() {
+  return normalizeThemeFolderEntry({
+    id: 'default',
+    name: 'Default',
+    bgMain: '#0a0a0a',
+    bgPanel: '#141414',
+    textMain: '#ffffff',
+    accent: '#0866FF',
+    pointerColor: '#ffffff',
+    rimColor: '#444444',
+    ruleColor: '#333333',
+    wheelColors: ['#222222', '#444444', '#0866FF', '#111111'],
+    segTextCustom: false,
+    segTextColor: '#ffffff',
+    segFontScale: 1.0,
+    stageLogo: true,
+    hdrScale: 1.0,
+    centerScale: 1.0,
+    glow: true,
+    glowC1: '#0866FF',
+    glowC2: '#34A853',
+    glowC3: '#FBBC04',
+    glowC4: '#EA4335',
+    glowInt: 0.5,
+    glowBlur: 40,
+    glowSize: 96,
+    confC1: '#0866FF',
+    confC2: '#34A853',
+    confC3: '#FBBC04',
+    confC4: '#EA4335'
+  }, 'default');
 }
 
 function getBuiltinThemes() {
   if (BUILTIN_THEMES && BUILTIN_THEMES.length) return BUILTIN_THEMES;
-  return [
-    normalizeThemeFolderEntry({
-      id: 'googlebook', name: 'Googlebook',
-      bgMain: '#0a0a0a', bgPanel: '#141414', textMain: '#ffffff', accent: '#0866FF',
-      pointerColor: '#ffffff', rimColor: '#444444', ruleColor: '#333333',
-      wheelColors: ['#222222','#444444','#0866FF','#111111'],
-      segTextCustom: false, segTextColor: '#ffffff', segFontScale: 1.0,
-      stageLogo: true, glow: true,
-      glowC1: '#4285F4', glowC2: '#34A853', glowC3: '#FBBC04', glowC4: '#FBBC04',
-      glowInt: 0.5, glowBlur: 40, glowSize: 96,
-      confC1: '#4285F4', confC2: '#34A853', confC3: '#FBBC04', confC4: '#FBBC04',
-      hdrScale: 1.0, centerScale: 1.0
-    }, 'googlebook'),
-    normalizeThemeFolderEntry({
-      id: 'chromebook', name: 'Chromebook',
-      bgMain: '#f0f2f5', bgPanel: '#ffffff', textMain: '#202124', accent: '#0866FF',
-      pointerColor: '#0866FF', rimColor: '#e0e0e0', ruleColor: '#ffffff',
-      wheelColors: ['#0866FF','#34A853','#FBBC04','#EA4335'],
-      segTextCustom: false, segTextColor: '#ffffff', segFontScale: 1.0,
-      stageLogo: true, glow: false,
-      glowC1: '#0866FF', glowC2: '#34A853', glowC3: '#FBBC04', glowC4: '#EA4335',
-      glowInt: 0.3, glowBlur: 30, glowSize: 95,
-      confC1: '#0866FF', confC2: '#34A853', confC3: '#FBBC04', confC4: '#EA4335',
-      hdrScale: 1.0, centerScale: 1.0
-    }, 'chromebook'),
-    normalizeThemeFolderEntry({
-      id: 'clean_light', name: 'Clean Light',
-      bgMain: '#f0f2f5', bgPanel: '#ffffff', textMain: '#1c1e21', accent: '#0866FF',
-      pointerColor: '#0866FF', rimColor: '#d1d5db', ruleColor: '#ffffff',
-      wheelColors: ['#3b5998','#4267b2','#8b9dc3','#dfe3ee'],
-      segTextCustom: false, segTextColor: '#ffffff', segFontScale: 1.0,
-      stageLogo: true, glow: false,
-      glowC1: '#0866FF', glowC2: '#34A853', glowC3: '#FBBC04', glowC4: '#EA4335',
-      glowInt: 0.3, glowBlur: 30, glowSize: 95,
-      confC1: '#0866FF', confC2: '#34A853', confC3: '#FBBC04', confC4: '#EA4335',
-      hdrScale: 1.0, centerScale: 1.0
-    }, 'clean_light'),
-    normalizeThemeFolderEntry({
-      id: 'gold_luxe', name: 'Gold Luxe',
-      bgMain: '#110d00', bgPanel: '#1a1400', textMain: '#ffd700', accent: '#ffaa00',
-      pointerColor: '#ffd700', rimColor: '#b8860b', ruleColor: '#221c00',
-      wheelColors: ['#ffd700','#b8860b','#221c00','#ffaa00'],
-      segTextCustom: false, segTextColor: '#ffffff', segFontScale: 1.0,
-      stageLogo: true, glow: true,
-      glowC1: '#ffd700', glowC2: '#ffaa00', glowC3: '#ff8c00', glowC4: '#b8860b',
-      glowInt: 0.6, glowBlur: 45, glowSize: 98,
-      confC1: '#ffd700', confC2: '#ffaa00', confC3: '#ff8c00', confC4: '#b8860b',
-      hdrScale: 1.0, centerScale: 1.0
-    }, 'gold_luxe')
-  ];
+  return [getNeutralFallbackTheme()];
+}
+
+function defaultThemeId() {
+  return (BUILTIN_THEMES && BUILTIN_THEMES.length && BUILTIN_THEMES[0] && BUILTIN_THEMES[0].id)
+    ? BUILTIN_THEMES[0].id
+    : 'default';
+}
+
+function prewarmFolderLogos(ids) {
+  if (!window.fetch || !Array.isArray(ids)) return;
+  ids.forEach(function(id){
+    var enc = encodeURIComponent(id);
+    var opts = navigator.onLine ? { cache: 'no-store' } : {};
+    fetch('./themes/' + enc + '/header-logo.png', opts).catch(function(){});
+    fetch('./themes/' + enc + '/center-logo.png', opts).catch(function(){});
+    fetch('./themes/' + enc + '/centre-logo.png', opts).catch(function(){});
+  });
 }
 
 /* Dynamically discover and load all theme folders from ./themes/index.json */
 function discoverThemesFromDisk() {
-  if (!window.fetch) return Promise.resolve(getBuiltinThemes());
-  return fetch('./themes/index.json')
+  if (!window.fetch) {
+    BUILTIN_THEMES = [getNeutralFallbackTheme()];
+    return Promise.resolve(BUILTIN_THEMES);
+  }
+  var fetchOpts = navigator.onLine ? { cache: 'no-store' } : {};
+  return fetch('./themes/index.json', fetchOpts)
     .then(function(res){
       if (!res.ok) throw new Error('index.json status ' + res.status);
       return res.json();
     })
     .then(function(idxData){
-      var ids = Array.isArray(idxData) ? idxData : (idxData && Array.isArray(idxData.themes) ? idxData.themes : []);
-      ids = ids.filter(function(x){ return typeof x === 'string' && x.trim().length > 0; });
+      var ids = parseThemeIndexEntries(idxData);
       if (!ids.length) throw new Error('No theme IDs in ./themes/index.json');
+      prewarmFolderLogos(ids);
       return Promise.all(ids.map(function(folderId){
-        return fetch('./themes/' + encodeURIComponent(folderId) + '/theme.json')
+        return fetch('./themes/' + encodeURIComponent(folderId) + '/theme.json', fetchOpts)
           .then(function(r){
             if (!r.ok) throw new Error('Missing theme.json for ' + folderId);
             return r.json();
@@ -1720,24 +1751,21 @@ function discoverThemesFromDisk() {
             return normalizeThemeFolderEntry(tJson, folderId);
           })
           .catch(function(){
-            var fallbacks = getBuiltinThemes();
-            for (var i = 0; i < fallbacks.length; i++) {
-              if (fallbacks[i].id === folderId) return fallbacks[i];
-            }
-            return normalizeThemeFolderEntry({ id: folderId, name: folderId }, folderId);
+            return null;
           });
       }));
     })
     .then(function(loaded){
-      if (loaded && loaded.length) {
-        BUILTIN_THEMES = loaded;
-        return loaded;
+      var valid = (loaded || []).filter(Boolean);
+      if (valid.length) {
+        BUILTIN_THEMES = valid;
+        return valid;
       }
-      BUILTIN_THEMES = getBuiltinThemes();
+      BUILTIN_THEMES = [getNeutralFallbackTheme()];
       return BUILTIN_THEMES;
     })
     .catch(function(){
-      BUILTIN_THEMES = getBuiltinThemes();
+      BUILTIN_THEMES = [getNeutralFallbackTheme()];
       return BUILTIN_THEMES;
     });
 }
@@ -1787,7 +1815,16 @@ var stageLogoAvailable = false;
 logoImg.onload = function(){ logoReady = true; draw(); };
 logoImg.onerror = function(){ logoReady = false; draw(); };
 centerLogoImg.onload = function(){ centerLogoReady = true; draw(); };
-centerLogoImg.onerror = function(){ centerLogoReady = false; draw(); };
+centerLogoImg.onerror = function(){
+  var curSrc = centerLogoImg.getAttribute('src') || '';
+  if (curSrc.indexOf('/center-logo.png') !== -1 && curSrc.indexOf('alt_tried=1') === -1) {
+    var altSrc = curSrc.replace('/center-logo.png', '/centre-logo.png');
+    centerLogoImg.src = altSrc + (altSrc.indexOf('?') === -1 ? '?alt_tried=1' : '&alt_tried=1');
+    return;
+  }
+  centerLogoReady = false;
+  draw();
+};
 
 function $(id){ return document.getElementById(id); }
 function esc(s){ return String(s).replace(/[&<>"']/g, function(c){
@@ -1916,7 +1953,7 @@ function writeHashSnapshot(){
     var payload = {
       t: state.title,
       m: state.mode,
-      th: (state.theme && state.theme.id) ? state.theme.id : 'googlebook',
+      th: (state.theme && state.theme.id) ? state.theme.id : defaultThemeId(),
       e: state.entries.map(function(x){ return [x.label, x.qty]; }),
       p: state.prizes.map(function(x){ return [x.label, x.qty]; }),
       o: [state.options.remove ? 1 : 0, state.options.distribute ? 1 : 0, state.options.maxSlices || 60],
@@ -1939,7 +1976,7 @@ function readHashSnapshot(){
     return {
       title: obj.t || 'Prize Draw',
       mode: obj.m === 'two' ? 'two' : 'single',
-      themeId: obj.th || 'googlebook',
+      themeId: obj.th || null,
       entries: obj.e.map(function(pair){ return {label: String(pair[0]), qty: Math.max(1, parseInt(pair[1], 10) || 1)}; }),
       prizes: Array.isArray(obj.p) ? obj.p.map(function(pair){ return {label: String(pair[0]), qty: Math.max(1, parseInt(pair[1], 10) || 1)}; }) : [],
       updatedAt: obj.ts || 0
@@ -1972,17 +2009,17 @@ function isAssetBankLogoString(str){
 function stripAssetBankLogosFromTheme(t){
   if (!t) return null;
   var copy = JSON.parse(JSON.stringify(t));
-  var presetId = copy.logoPreset || (isBuiltinId(copy.id) ? copy.id : 'googlebook');
+  var presetId = copy.logoPreset || (isBuiltinId(copy.id) ? copy.id : defaultThemeId());
   var targetHdrId = copy.hasCustomHdrLogo ? copy.id : presetId;
   var targetCenterId = copy.hasCustomCenterLogo ? copy.id : presetId;
   if (!copy.logos || typeof copy.logos !== 'object') copy.logos = {};
   if (!copy.logos.hdr || isAssetBankLogoString(copy.logos.hdr)) {
-    copy.logos.hdr = './themes/' + targetHdrId + '/header-logo.png';
+    copy.logos.hdr = './themes/' + encodeURIComponent(targetHdrId) + '/header-logo.png';
   } else {
     copy.logos.hdr = toRelativeAssetPath(copy.logos.hdr);
   }
   if (!copy.logos.center || isAssetBankLogoString(copy.logos.center)) {
-    copy.logos.center = './themes/' + targetCenterId + '/center-logo.png';
+    copy.logos.center = './themes/' + encodeURIComponent(targetCenterId) + '/center-logo.png';
   } else {
     copy.logos.center = toRelativeAssetPath(copy.logos.center);
   }
@@ -2127,7 +2164,7 @@ function buildKioskBackupPayload(nowTs){
     prizes: cleanList(state.prizes),
     baseline: state.baseline || null,
     options: state.options,
-    themeId: (state.theme && state.theme.id) ? state.theme.id : 'googlebook',
+    themeId: (state.theme && state.theme.id) ? state.theme.id : defaultThemeId(),
     history: (state.history || []).slice(-500),
     updatedAt: nowTs || Date.now()
   };
@@ -2142,7 +2179,7 @@ function save(immediateCloud){
     entries: state.entries,
     prizes: state.prizes,
     options: state.options,
-    themeId: (state.theme && state.theme.id) ? state.theme.id : 'googlebook',
+    themeId: (state.theme && state.theme.id) ? state.theme.id : defaultThemeId(),
     updatedAt: nowTs
   };
   try {
@@ -2249,7 +2286,16 @@ function load(){
       if (o.baseline) state.baseline = o.baseline;
       if (o.options) for (var k in state.options) if (o.options[k] !== undefined) state.options[k] = o.options[k];
       if (Array.isArray(o.history)) state.history = o.history;
-      if (Array.isArray(o.customThemes)) state.customThemes = o.customThemes.map(stripAssetBankLogosFromTheme);
+      if (Array.isArray(o.customThemes)) {
+        state.customThemes = o.customThemes
+          .map(stripAssetBankLogosFromTheme)
+          .filter(function(ct){
+            if (!ct || !ct.id) return false;
+            // Prune local overrides of folder themes that were deleted from ./themes/index.json
+            if (ct.isFolderOverride && !isBuiltinId(ct.id)) return false;
+            return true;
+          });
+      }
     }
 
     // If the dedicated Live Inventory key is newer or full store failed, overlay the latest live counts
@@ -2278,23 +2324,24 @@ function load(){
     state.options.maxSlices = Math.max(2, Math.min(300, parseInt(state.options.maxSlices, 10) || DEFAULT_MAX_SLICES));
     if (migratedFromV2) state.options.remove = true;
 
-    var savedLastId = null;
-    try { savedLastId = localStorage.getItem(LAST_THEME_KEY); } catch(e){}
-    if (!savedLastId && liveObj && liveObj.themeId) savedLastId = liveObj.themeId;
-    if (!savedLastId && hashObj && hashObj.themeId) savedLastId = hashObj.themeId;
+    var candidateThemeId = null;
+    try { candidateThemeId = localStorage.getItem(LAST_THEME_KEY); } catch(e){}
+    if (!candidateThemeId && liveObj && liveObj.themeId) candidateThemeId = liveObj.themeId;
+    if (!candidateThemeId && hashObj && hashObj.themeId) candidateThemeId = hashObj.themeId;
+    if (!candidateThemeId && o && o.theme && o.theme.id) candidateThemeId = o.theme.id;
 
-    var themeToApply = null;
-    if (savedLastId) {
-      themeToApply = findThemeById(savedLastId);
-    }
-    if (!themeToApply && o && o.theme) {
-      var matched = o.theme.id ? findThemeById(o.theme.id) : null;
-      themeToApply = o.theme;
-      if (matched && !themeToApply.logoPreset) themeToApply.logoPreset = matched.logoPreset || matched.id;
-    }
-    if (!themeToApply) themeToApply = BUILTIN_THEMES[0];
+    // Only resolve against active ./themes/index.json entries or valid custom themes;
+    // if a folder theme was deleted on GitHub, fall back cleanly to BUILTIN_THEMES[0]
+    var themeToApply = candidateThemeId ? findThemeById(candidateThemeId) : null;
+    var fellBackFromDeleted = !!(candidateThemeId && !themeToApply);
+    if (!themeToApply) themeToApply = BUILTIN_THEMES[0] || getNeutralFallbackTheme();
 
     applyThemeObject(themeToApply, false);
+
+    if (fellBackFromDeleted) {
+      try { localStorage.setItem(LAST_THEME_KEY, themeToApply.id); } catch(e){}
+      writeHashSnapshot();
+    }
 
     if (migratedFromV2) {
       try { localStorage.removeItem(LEGACY_STORE_KEY); } catch(e){}
@@ -2463,7 +2510,7 @@ function buildInstanceFromCurrentState(id, name){
       colorByPrize: !!state.options.colorByPrize,
       maxSlices: state.options.maxSlices || DEFAULT_MAX_SLICES
     },
-    themeId: (state.theme && state.theme.id) ? state.theme.id : 'googlebook',
+    themeId: (state.theme && state.theme.id) ? state.theme.id : defaultThemeId(),
     deviceId: getOrCreateDeviceId(),
     updatedAt: Date.now()
   };
@@ -2834,12 +2881,14 @@ wireLogoDomElements();
 
 function resolveThemeLogos(t) {
   if (!BUILTIN_THEMES.length) BUILTIN_THEMES = getBuiltinThemes();
-  var tid = (t && t.id) ? t.id : 'googlebook';
-  var presetKey = (t && t.logoPreset) || (isBuiltinId(tid) ? tid : 'googlebook');
+  var defId = defaultThemeId();
+  var tid = (t && t.id) ? t.id : defId;
+  var candidatePreset = (t && t.logoPreset) || (isBuiltinId(tid) ? tid : defId);
+  var presetKey = isBuiltinId(candidatePreset) ? candidatePreset : defId;
   var basePreset = getFactoryBuiltinById(presetKey) || BUILTIN_THEMES[0] || {
     logos: {
-      hdr: './themes/' + presetKey + '/header-logo.png',
-      center: './themes/' + presetKey + '/center-logo.png'
+      hdr: './themes/' + encodeURIComponent(presetKey) + '/header-logo.png',
+      center: './themes/' + encodeURIComponent(presetKey) + '/center-logo.png'
     }
   };
   var presetLogos = basePreset.logos || {};
@@ -2847,24 +2896,24 @@ function resolveThemeLogos(t) {
   var ver = (t && t.logoVersion) ? ('?v=' + t.logoVersion) : '';
   var customCached = themeCustomAssets[tid] || null;
 
-  var hdrUrl = toRelativeAssetPath(presetLogos.hdr) || ('./themes/' + presetKey + '/header-logo.png');
+  var hdrUrl = toRelativeAssetPath(presetLogos.hdr) || ('./themes/' + encodeURIComponent(presetKey) + '/header-logo.png');
   if (pendingLogoUploads.hdr && state.theme && state.theme.id === tid) {
     hdrUrl = pendingLogoUploads.hdr;
   } else if ((t && t.hasCustomHdrLogo) || (customCached && customCached.hdr)) {
     hdrUrl = swActive
-      ? ('./themes/' + tid + '/header-logo.png' + ver)
-      : ((customCached && customCached.hdr) || ('./themes/' + tid + '/header-logo.png' + ver));
+      ? ('./themes/' + encodeURIComponent(tid) + '/header-logo.png' + ver)
+      : ((customCached && customCached.hdr) || ('./themes/' + encodeURIComponent(tid) + '/header-logo.png' + ver));
   } else if (t && t.logos && t.logos.hdr && !t.logos.hdr.startsWith('/*')) {
     hdrUrl = toRelativeAssetPath(t.logos.hdr);
   }
 
-  var centerUrl = toRelativeAssetPath(presetLogos.center) || ('./themes/' + presetKey + '/center-logo.png');
+  var centerUrl = toRelativeAssetPath(presetLogos.center) || ('./themes/' + encodeURIComponent(presetKey) + '/center-logo.png');
   if (pendingLogoUploads.center && state.theme && state.theme.id === tid) {
     centerUrl = pendingLogoUploads.center;
   } else if ((t && t.hasCustomCenterLogo) || (customCached && customCached.center)) {
     centerUrl = swActive
-      ? ('./themes/' + tid + '/center-logo.png' + ver)
-      : ((customCached && customCached.center) || ('./themes/' + tid + '/center-logo.png' + ver));
+      ? ('./themes/' + encodeURIComponent(tid) + '/center-logo.png' + ver)
+      : ((customCached && customCached.center) || ('./themes/' + encodeURIComponent(tid) + '/center-logo.png' + ver));
   } else if (t && t.logos && t.logos.center && !t.logos.center.startsWith('/*')) {
     centerUrl = toRelativeAssetPath(t.logos.center);
   }
@@ -3166,13 +3215,16 @@ function applyThemeObject(t, saveState){
 
   // Resolve Logos from ./themes/{themeId}/header-logo.png & center-logo.png (or SW-cached custom asset)
   var tid = t.id || 'custom';
-  var logoPreset = t.logoPreset || (isBuiltinId(tid) ? tid : 'googlebook');
+  var defId = defaultThemeId();
+  var logoPreset = (t.logoPreset && isBuiltinId(t.logoPreset))
+    ? t.logoPreset
+    : (isBuiltinId(tid) ? tid : defId);
   var hasCustomHdr = !!(t.hasCustomHdrLogo || (themeCustomAssets[tid] && themeCustomAssets[tid].hdr));
   var hasCustomCenter = !!(t.hasCustomCenterLogo || (themeCustomAssets[tid] && themeCustomAssets[tid].center));
 
   state.logos = {
-    hdr: './themes/' + (hasCustomHdr ? tid : logoPreset) + '/header-logo.png',
-    center: './themes/' + (hasCustomCenter ? tid : logoPreset) + '/center-logo.png'
+    hdr: './themes/' + encodeURIComponent(hasCustomHdr ? tid : logoPreset) + '/header-logo.png',
+    center: './themes/' + encodeURIComponent(hasCustomCenter ? tid : logoPreset) + '/center-logo.png'
   };
 
   state.theme = {
@@ -3233,7 +3285,10 @@ function applyThemeObject(t, saveState){
 
 function getActiveThemeFromForm(id, name) {
   var wheelColors = $('themeWheelColors').value.split(',').map(function(s){ return s.trim(); }).filter(Boolean);
-  var currentPreset = (state.theme && state.theme.logoPreset) ? state.theme.logoPreset : 'googlebook';
+  var defId = defaultThemeId();
+  var currentPreset = (state.theme && state.theme.logoPreset && isBuiltinId(state.theme.logoPreset))
+    ? state.theme.logoPreset
+    : defId;
   var targetId = id || ('custom_' + Date.now());
   var presetId = isBuiltinId(targetId) ? targetId : currentPreset;
   var hasCustomHdr = !!(state.theme && state.theme.id === targetId && state.theme.hasCustomHdrLogo);
@@ -3243,6 +3298,7 @@ function getActiveThemeFromForm(id, name) {
     id: targetId,
     name: name || 'Custom Theme',
     logoPreset: presetId,
+    isFolderOverride: isBuiltinId(targetId),
     hasCustomHdrLogo: hasCustomHdr,
     hasCustomCenterLogo: hasCustomCenter,
     logoVersion: (state.theme && state.theme.id === targetId && state.theme.logoVersion) ? state.theme.logoVersion : 0,
@@ -3273,8 +3329,8 @@ function getActiveThemeFromForm(id, name) {
     hdrScale: parseFloat($('themeHdrScale').value) || 1.0,
     centerScale: parseFloat($('themeCenterScale').value) || 1.0,
     logos: {
-      hdr: './themes/' + (hasCustomHdr ? targetId : presetId) + '/header-logo.png',
-      center: './themes/' + (hasCustomCenter ? targetId : presetId) + '/center-logo.png'
+      hdr: './themes/' + encodeURIComponent(hasCustomHdr ? targetId : presetId) + '/header-logo.png',
+      center: './themes/' + encodeURIComponent(hasCustomCenter ? targetId : presetId) + '/center-logo.png'
     }
   };
 }
@@ -3296,7 +3352,9 @@ function renderThemeDropdown(selectedId){
   });
   sel.appendChild(groupBuiltin);
 
-  var userCustom = (state.customThemes || []).filter(function(ct){ return ct && !isBuiltinId(ct.id); });
+  var userCustom = (state.customThemes || []).filter(function(ct){
+    return ct && !isBuiltinId(ct.id) && !ct.isFolderOverride;
+  });
   if (userCustom.length > 0) {
     var groupCustom = document.createElement('optgroup');
     groupCustom.label = 'Saved Themes';
@@ -3326,7 +3384,7 @@ function getAllAvailableThemes(){
     list.push({theme: resolved, badge: isMod ? 'Modified' : 'Built-in'});
   });
   (state.customThemes || []).forEach(function(ct){
-    if (ct && !isBuiltinId(ct.id)) {
+    if (ct && !isBuiltinId(ct.id) && !ct.isFolderOverride) {
       list.push({theme: ct, badge: 'Saved'});
     }
   });
@@ -3337,7 +3395,7 @@ function renderThemePickerCards(){
   var grid = $('themePickerGrid');
   if (!grid) return;
   grid.innerHTML = '';
-  var currentId = (state.theme && state.theme.id) ? state.theme.id : (BUILTIN_THEMES[0] ? BUILTIN_THEMES[0].id : 'googlebook');
+  var currentId = (state.theme && state.theme.id) ? state.theme.id : defaultThemeId();
   var items = getAllAvailableThemes();
 
   items.forEach(function(entry){
@@ -3441,15 +3499,18 @@ function persistThemeWithLogosAndCloud(themeObj, sourceThemeId, onDone){
   var hdrData = pendingLogoUploads.hdr || (prevAssets && prevAssets.hdr) || null;
   var centerData = pendingLogoUploads.center || (prevAssets && prevAssets.center) || null;
   var nowVer = Date.now();
-  var presetId = themeObj.logoPreset || (isBuiltinId(themeObj.id) ? themeObj.id : 'googlebook');
+  var presetId = (themeObj.logoPreset && isBuiltinId(themeObj.logoPreset))
+    ? themeObj.logoPreset
+    : (isBuiltinId(themeObj.id) ? themeObj.id : defaultThemeId());
 
+  themeObj.isFolderOverride = isBuiltinId(themeObj.id);
   themeObj.hasCustomHdrLogo = !!hdrData;
   themeObj.hasCustomCenterLogo = !!centerData;
   themeObj.logoVersion = (hdrData || centerData) ? nowVer : (themeObj.logoVersion || 0);
   themeObj.updatedAt = nowVer;
   themeObj.logos = {
-    hdr: './themes/' + (hdrData ? themeObj.id : presetId) + '/header-logo.png',
-    center: './themes/' + (centerData ? themeObj.id : presetId) + '/center-logo.png'
+    hdr: './themes/' + encodeURIComponent(hdrData ? themeObj.id : presetId) + '/header-logo.png',
+    center: './themes/' + encodeURIComponent(centerData ? themeObj.id : presetId) + '/center-logo.png'
   };
 
   pendingLogoUploads = { hdr: null, center: null };
@@ -4897,12 +4958,14 @@ window.__spinWheelAppHooks = {
     if (Array.isArray(remoteThemesList)) {
       remoteThemesList.forEach(function(rt){
         if (!rt || !rt.id) return;
+        // Skip Firestore overrides of folder themes that are no longer in ./themes/index.json
+        if (rt.isFolderOverride && !isBuiltinId(rt.id)) return;
         var slim = stripAssetBankLogosFromTheme(rt);
         upsertCustomThemeInState(slim);
       });
     }
 
-    var activeId = (state.theme && state.theme.id) ? state.theme.id : (BUILTIN_THEMES[0] ? BUILTIN_THEMES[0].id : 'googlebook');
+    var activeId = (state.theme && state.theme.id) ? state.theme.id : defaultThemeId();
     var resolvedActive = findThemeById(activeId);
     if (resolvedActive) {
       // Apply remote theme updates in real time without resetting wheel spin angle
@@ -5040,19 +5103,22 @@ function runStartupInit() {
       state.title = 'Prize Draw';
       var savedLastId = null;
       try { savedLastId = localStorage.getItem(LAST_THEME_KEY); } catch(e){}
-      var initialTheme = (savedLastId && findThemeById(savedLastId)) || BUILTIN_THEMES[0];
+      var initialTheme = (savedLastId && findThemeById(savedLastId)) || BUILTIN_THEMES[0] || getNeutralFallbackTheme();
       applyThemeObject(initialTheme, false);
+      if (savedLastId && initialTheme && savedLastId !== initialTheme.id) {
+        try { localStorage.setItem(LAST_THEME_KEY, initialTheme.id); } catch(e){}
+      }
     } else if (!state.theme) {
-      applyThemeObject(BUILTIN_THEMES[0], false);
+      applyThemeObject(BUILTIN_THEMES[0] || getNeutralFallbackTheme(), false);
     } else {
-      var latestTheme = findThemeById(state.theme.id) || state.theme;
+      var latestTheme = findThemeById(state.theme.id) || BUILTIN_THEMES[0] || getNeutralFallbackTheme();
       applyThemeObject(latestTheme, false);
     }
 
     $('titleInput').value = state.title;
     $('presentTitle').textContent = state.title;
     syncOptionInputs();
-    renderThemeDropdown(state.theme ? state.theme.id : BUILTIN_THEMES[0].id);
+    renderThemeDropdown(state.theme ? state.theme.id : defaultThemeId());
     buildSegments();
     renderEntries();
     renderHistory();
@@ -5077,9 +5143,14 @@ function runStartupInit() {
         if (idbState.baseline) state.baseline = idbState.baseline;
         if (idbState.title) { state.title = idbState.title; $('titleInput').value = state.title; $('presentTitle').textContent = state.title; }
         if (Array.isArray(idbState.history)) state.history = idbState.history;
-        if (Array.isArray(idbState.customThemes)) state.customThemes = idbState.customThemes;
-        if (idbState.theme) applyThemeObject(idbState.theme, false);
-        renderThemeDropdown(state.theme ? state.theme.id : BUILTIN_THEMES[0].id);
+        if (Array.isArray(idbState.customThemes)) {
+          state.customThemes = idbState.customThemes
+            .map(stripAssetBankLogosFromTheme)
+            .filter(function(ct){ return ct && ct.id && !(ct.isFolderOverride && !isBuiltinId(ct.id)); });
+        }
+        var recoveredTheme = (idbState.theme && idbState.theme.id && findThemeById(idbState.theme.id)) || BUILTIN_THEMES[0] || getNeutralFallbackTheme();
+        applyThemeObject(recoveredTheme, false);
+        renderThemeDropdown(state.theme ? state.theme.id : defaultThemeId());
         refresh(false);
         renderHistory();
         renderThemePickerCards();
