@@ -29,7 +29,7 @@
   "hdrScale": 1.0,
   "centerScale": 1.0,
   "logos": {
-    "hdr": "/themes/googlebook/header-logo.png",
-    "center": "/themes/googlebook/center-logo.png"
+    "hdr": "./themes/googlebook/header-logo.png",
+    "center": "./themes/googlebook/center-logo.png"
   }
 }

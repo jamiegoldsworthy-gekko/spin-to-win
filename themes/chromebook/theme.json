@@ -29,7 +29,7 @@
   "hdrScale": 1.0,
   "centerScale": 1.0,
   "logos": {
-    "hdr": "/themes/chromebook/header-logo.png",
-    "center": "/themes/chromebook/center-logo.png"
+    "hdr": "./themes/chromebook/header-logo.png",
+    "center": "./themes/chromebook/center-logo.png"
   }
 }

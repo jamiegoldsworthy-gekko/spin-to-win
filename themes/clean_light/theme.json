@@ -29,7 +29,7 @@
   "hdrScale": 1.0,
   "centerScale": 1.0,
   "logos": {
-    "hdr": "/themes/clean_light/header-logo.png",
-    "center": "/themes/clean_light/center-logo.png"
+    "hdr": "./themes/clean_light/header-logo.png",
+    "center": "./themes/clean_light/center-logo.png"
   }
 }

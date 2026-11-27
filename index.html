@@ -8,39 +8,39 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Spin Wheel">
-<link rel="manifest" href="/manifest.json">
-<link rel="icon" type="image/svg+xml" href="/icons/icon.svg">
-<link rel="apple-touch-icon" href="/icons/icon-192.png">
+<link rel="manifest" href="./manifest.json">
+<link rel="icon" type="image/svg+xml" href="./icons/icon.svg">
+<link rel="apple-touch-icon" href="./icons/icon-192.png">
 <title>Spin The Wheel</title>
 <style>
-  /* Local Offline-Ready Brand Fonts (/fonts/*.ttf) */
+  /* Local Offline-Ready Brand Fonts (./fonts/*.ttf) */
   @font-face {
     font-family: 'Product Sans';
     font-weight: 400;
     font-style: normal;
     font-display: swap;
-    src: url('/fonts/ProductSans-Regular.ttf') format('truetype');
+    src: url('./fonts/ProductSans-Regular.ttf') format('truetype');
   }
   @font-face {
     font-family: 'Product Sans';
     font-weight: 400;
     font-style: italic;
     font-display: swap;
-    src: url('/fonts/ProductSans-Italic.ttf') format('truetype');
+    src: url('./fonts/ProductSans-Italic.ttf') format('truetype');
   }
   @font-face {
     font-family: 'Product Sans';
     font-weight: 700;
     font-style: normal;
     font-display: swap;
-    src: url('/fonts/ProductSans-Bold.ttf') format('truetype');
+    src: url('./fonts/ProductSans-Bold.ttf') format('truetype');
   }
   @font-face {
     font-family: 'Product Sans';
     font-weight: 700;
     font-style: italic;
     font-display: swap;
-    src: url('/fonts/ProductSans-BoldItalic.ttf') format('truetype');
+    src: url('./fonts/ProductSans-BoldItalic.ttf') format('truetype');
   }
 
   :root{
@@ -1605,7 +1605,20 @@ var BASELINE_KEY = 'spin-wheel-baseline-v4';       // Starting baseline counts f
 var LAST_THEME_KEY = STORE_KEY + ':lastThemeId';
 var DEVICE_ID_KEY = 'spin-wheel-device-id-v1';     // Isolated per-kiosk device identifier
 var INSTANCES_LOCAL_KEY = 'spin-wheel-instances-v1';
-var THEMES_SW_CACHE = 'spin-wheel-themes-v1';
+var THEMES_SW_CACHE = 'spin-wheel-themes-v2';
+var APP_DIR_URL = new URL('./', window.location.href).href;
+
+function toRelativeAssetPath(p) {
+  if (!p || typeof p !== 'string') return p;
+  if (p.indexOf('/themes/') === 0 || p.indexOf('/fonts/') === 0 || p.indexOf('/icons/') === 0) {
+    return '.' + p;
+  }
+  return p;
+}
+
+function resolveAppAssetUrl(relPath) {
+  return new URL(toRelativeAssetPath(relPath), APP_DIR_URL).href;
+}
 
 var MAX_ITEM_QTY = 100000;
 var DEFAULT_MAX_SLICES = 60;
@@ -1626,8 +1639,8 @@ function normalizeThemeFolderEntry(raw, folderId) {
   copy.id = id;
   copy.logoPreset = copy.logoPreset || id;
   if (!copy.logos || typeof copy.logos !== 'object') copy.logos = {};
-  copy.logos.hdr = copy.logos.hdr || ('/themes/' + id + '/header-logo.png');
-  copy.logos.center = copy.logos.center || ('/themes/' + id + '/center-logo.png');
+  copy.logos.hdr = toRelativeAssetPath(copy.logos.hdr) || ('./themes/' + id + '/header-logo.png');
+  copy.logos.center = toRelativeAssetPath(copy.logos.center) || ('./themes/' + id + '/center-logo.png');
   return copy;
 }
 
@@ -1685,10 +1698,10 @@ function getBuiltinThemes() {
   ];
 }
 
-/* Dynamically discover and load all theme folders from /themes/index.json */
+/* Dynamically discover and load all theme folders from ./themes/index.json */
 function discoverThemesFromDisk() {
   if (!window.fetch) return Promise.resolve(getBuiltinThemes());
-  return fetch('/themes/index.json')
+  return fetch('./themes/index.json')
     .then(function(res){
       if (!res.ok) throw new Error('index.json status ' + res.status);
       return res.json();
@@ -1696,9 +1709,9 @@ function discoverThemesFromDisk() {
     .then(function(idxData){
       var ids = Array.isArray(idxData) ? idxData : (idxData && Array.isArray(idxData.themes) ? idxData.themes : []);
       ids = ids.filter(function(x){ return typeof x === 'string' && x.trim().length > 0; });
-      if (!ids.length) throw new Error('No theme IDs in /themes/index.json');
+      if (!ids.length) throw new Error('No theme IDs in ./themes/index.json');
       return Promise.all(ids.map(function(folderId){
-        return fetch('/themes/' + encodeURIComponent(folderId) + '/theme.json')
+        return fetch('./themes/' + encodeURIComponent(folderId) + '/theme.json')
           .then(function(r){
             if (!r.ok) throw new Error('Missing theme.json for ' + folderId);
             return r.json();
@@ -1964,10 +1977,14 @@ function stripAssetBankLogosFromTheme(t){
   var targetCenterId = copy.hasCustomCenterLogo ? copy.id : presetId;
   if (!copy.logos || typeof copy.logos !== 'object') copy.logos = {};
   if (!copy.logos.hdr || isAssetBankLogoString(copy.logos.hdr)) {
-    copy.logos.hdr = '/themes/' + targetHdrId + '/header-logo.png';
+    copy.logos.hdr = './themes/' + targetHdrId + '/header-logo.png';
+  } else {
+    copy.logos.hdr = toRelativeAssetPath(copy.logos.hdr);
   }
   if (!copy.logos.center || isAssetBankLogoString(copy.logos.center)) {
-    copy.logos.center = '/themes/' + targetCenterId + '/center-logo.png';
+    copy.logos.center = './themes/' + targetCenterId + '/center-logo.png';
+  } else {
+    copy.logos.center = toRelativeAssetPath(copy.logos.center);
   }
   return copy;
 }
@@ -1986,7 +2003,7 @@ function dataUrlToBlob(dataUrl){
 }
 
 /* Write compressed custom theme logos directly into the Service Worker cache
-   under /themes/{themeId}/header-logo.png and center-logo.png */
+   under ./themes/{themeId}/header-logo.png and center-logo.png */
 function writeThemeLogosToSWCache(themeId, assetsObj){
   if (!themeId || !assetsObj) return Promise.resolve();
   themeCustomAssets[themeId] = {
@@ -2002,7 +2019,7 @@ function writeThemeLogosToSWCache(themeId, assetsObj){
     if (assetsObj.hdr) {
       var hdrBlob = dataUrlToBlob(assetsObj.hdr);
       if (hdrBlob) {
-        ops.push(cache.put('/themes/' + themeId + '/header-logo.png', new Response(hdrBlob, {
+        ops.push(cache.put(resolveAppAssetUrl('./themes/' + themeId + '/header-logo.png'), new Response(hdrBlob, {
           status: 200,
           headers: {
             'Content-Type': hdrBlob.type || 'image/png',
@@ -2015,7 +2032,7 @@ function writeThemeLogosToSWCache(themeId, assetsObj){
     if (assetsObj.center) {
       var centerBlob = dataUrlToBlob(assetsObj.center);
       if (centerBlob) {
-        ops.push(cache.put('/themes/' + themeId + '/center-logo.png', new Response(centerBlob, {
+        ops.push(cache.put(resolveAppAssetUrl('./themes/' + themeId + '/center-logo.png'), new Response(centerBlob, {
           status: 200,
           headers: {
             'Content-Type': centerBlob.type || 'image/png',
@@ -2035,14 +2052,14 @@ function deleteThemeLogosFromSWCache(themeId){
   idbWrite('themeCustomAssets', themeCustomAssets);
   if (!window.caches || !window.caches.open) return Promise.resolve();
   return window.caches.open(THEMES_SW_CACHE).then(function(cache){
-    var paths = [
-      '/themes/' + themeId + '/header-logo.png',
-      '/themes/' + themeId + '/center-logo.png'
+    var urls = [
+      resolveAppAssetUrl('./themes/' + themeId + '/header-logo.png'),
+      resolveAppAssetUrl('./themes/' + themeId + '/center-logo.png')
     ];
-    return Promise.all(paths.map(function(p){
-      return cache.match(p, { ignoreSearch: true }).then(function(res){
+    return Promise.all(urls.map(function(u){
+      return cache.match(u, { ignoreSearch: true }).then(function(res){
         if (res && res.headers.get('X-Theme-Source') === 'firestore') {
-          return cache.delete(p);
+          return cache.delete(u);
         }
       });
     }));
@@ -2821,8 +2838,8 @@ function resolveThemeLogos(t) {
   var presetKey = (t && t.logoPreset) || (isBuiltinId(tid) ? tid : 'googlebook');
   var basePreset = getFactoryBuiltinById(presetKey) || BUILTIN_THEMES[0] || {
     logos: {
-      hdr: '/themes/' + presetKey + '/header-logo.png',
-      center: '/themes/' + presetKey + '/center-logo.png'
+      hdr: './themes/' + presetKey + '/header-logo.png',
+      center: './themes/' + presetKey + '/center-logo.png'
     }
   };
   var presetLogos = basePreset.logos || {};
@@ -2830,26 +2847,26 @@ function resolveThemeLogos(t) {
   var ver = (t && t.logoVersion) ? ('?v=' + t.logoVersion) : '';
   var customCached = themeCustomAssets[tid] || null;
 
-  var hdrUrl = presetLogos.hdr || ('/themes/' + presetKey + '/header-logo.png');
+  var hdrUrl = toRelativeAssetPath(presetLogos.hdr) || ('./themes/' + presetKey + '/header-logo.png');
   if (pendingLogoUploads.hdr && state.theme && state.theme.id === tid) {
     hdrUrl = pendingLogoUploads.hdr;
   } else if ((t && t.hasCustomHdrLogo) || (customCached && customCached.hdr)) {
     hdrUrl = swActive
-      ? ('/themes/' + tid + '/header-logo.png' + ver)
-      : ((customCached && customCached.hdr) || ('/themes/' + tid + '/header-logo.png' + ver));
+      ? ('./themes/' + tid + '/header-logo.png' + ver)
+      : ((customCached && customCached.hdr) || ('./themes/' + tid + '/header-logo.png' + ver));
   } else if (t && t.logos && t.logos.hdr && !t.logos.hdr.startsWith('/*')) {
-    hdrUrl = t.logos.hdr;
+    hdrUrl = toRelativeAssetPath(t.logos.hdr);
   }
 
-  var centerUrl = presetLogos.center || ('/themes/' + presetKey + '/center-logo.png');
+  var centerUrl = toRelativeAssetPath(presetLogos.center) || ('./themes/' + presetKey + '/center-logo.png');
   if (pendingLogoUploads.center && state.theme && state.theme.id === tid) {
     centerUrl = pendingLogoUploads.center;
   } else if ((t && t.hasCustomCenterLogo) || (customCached && customCached.center)) {
     centerUrl = swActive
-      ? ('/themes/' + tid + '/center-logo.png' + ver)
-      : ((customCached && customCached.center) || ('/themes/' + tid + '/center-logo.png' + ver));
+      ? ('./themes/' + tid + '/center-logo.png' + ver)
+      : ((customCached && customCached.center) || ('./themes/' + tid + '/center-logo.png' + ver));
   } else if (t && t.logos && t.logos.center && !t.logos.center.startsWith('/*')) {
-    centerUrl = t.logos.center;
+    centerUrl = toRelativeAssetPath(t.logos.center);
   }
 
   return { hdr: hdrUrl, center: centerUrl };
@@ -3147,15 +3164,15 @@ function applyThemeObject(t, saveState){
   $('valGlowSpread').textContent = gSpread + 'px';
   $('valGlowSize').textContent = gSize + '%';
 
-  // Resolve Logos from /themes/{themeId}/header-logo.png & center-logo.png (or SW-cached custom asset)
+  // Resolve Logos from ./themes/{themeId}/header-logo.png & center-logo.png (or SW-cached custom asset)
   var tid = t.id || 'custom';
   var logoPreset = t.logoPreset || (isBuiltinId(tid) ? tid : 'googlebook');
   var hasCustomHdr = !!(t.hasCustomHdrLogo || (themeCustomAssets[tid] && themeCustomAssets[tid].hdr));
   var hasCustomCenter = !!(t.hasCustomCenterLogo || (themeCustomAssets[tid] && themeCustomAssets[tid].center));
 
   state.logos = {
-    hdr: '/themes/' + (hasCustomHdr ? tid : logoPreset) + '/header-logo.png',
-    center: '/themes/' + (hasCustomCenter ? tid : logoPreset) + '/center-logo.png'
+    hdr: './themes/' + (hasCustomHdr ? tid : logoPreset) + '/header-logo.png',
+    center: './themes/' + (hasCustomCenter ? tid : logoPreset) + '/center-logo.png'
   };
 
   state.theme = {
@@ -3256,8 +3273,8 @@ function getActiveThemeFromForm(id, name) {
     hdrScale: parseFloat($('themeHdrScale').value) || 1.0,
     centerScale: parseFloat($('themeCenterScale').value) || 1.0,
     logos: {
-      hdr: '/themes/' + (hasCustomHdr ? targetId : presetId) + '/header-logo.png',
-      center: '/themes/' + (hasCustomCenter ? targetId : presetId) + '/center-logo.png'
+      hdr: './themes/' + (hasCustomHdr ? targetId : presetId) + '/header-logo.png',
+      center: './themes/' + (hasCustomCenter ? targetId : presetId) + '/center-logo.png'
     }
   };
 }
@@ -3431,8 +3448,8 @@ function persistThemeWithLogosAndCloud(themeObj, sourceThemeId, onDone){
   themeObj.logoVersion = (hdrData || centerData) ? nowVer : (themeObj.logoVersion || 0);
   themeObj.updatedAt = nowVer;
   themeObj.logos = {
-    hdr: '/themes/' + (hdrData ? themeObj.id : presetId) + '/header-logo.png',
-    center: '/themes/' + (centerData ? themeObj.id : presetId) + '/center-logo.png'
+    hdr: './themes/' + (hdrData ? themeObj.id : presetId) + '/header-logo.png',
+    center: './themes/' + (centerData ? themeObj.id : presetId) + '/center-logo.png'
   };
 
   pendingLogoUploads = { hdr: null, center: null };
@@ -4958,7 +4975,7 @@ function registerAppServiceWorker(){
   var proto = window.location.protocol;
   if (proto !== 'https:' && proto !== 'http:') return;
 
-  navigator.serviceWorker.register('/sw.js', { scope: '/' })
+  navigator.serviceWorker.register('./sw.js', { scope: './' })
     .then(function(reg){
       if (reg.active) {
         reg.active.postMessage({ type: 'WARM_ASSETS' });
