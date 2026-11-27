@@ -1,0 +1,8 @@
+const firebaseConfig = {
+  apiKey: "AIzaSyDVaN7S0RJCtPeb-2sRFEawnh3b-BTa9IA",
+  authDomain: "spin-to-win-e4142.firebaseapp.com",
+  projectId: "spin-to-win-e4142",
+  storageBucket: "spin-to-win-e4142.firebasestorage.app",
+  messagingSenderId: "954436665989",
+  appId: "1:954436665989:web:1ae538dd334d780b019fec"
+};

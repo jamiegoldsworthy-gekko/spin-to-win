@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <rect width="512" height="512" rx="108" fill="#0a0a0a"/>
+  <circle cx="256" cy="264" r="186" fill="#222222" stroke="#444444" stroke-width="14"/>
+  <!-- 8 Wheel Slices -->
+  <path d="M256,264 L256,84 A180,180 0 0,1 383.3,136.7 Z" fill="#0866FF"/>
+  <path d="M256,264 L383.3,136.7 A180,180 0 0,1 436,264 Z" fill="#34A853"/>
+  <path d="M256,264 L436,264 A180,180 0 0,1 383.3,391.3 Z" fill="#FBBC04"/>
+  <path d="M256,264 L383.3,391.3 A180,180 0 0,1 256,444 Z" fill="#EA4335"/>
+  <path d="M256,264 L256,444 A180,180 0 0,1 128.7,391.3 Z" fill="#0866FF"/>
+  <path d="M256,264 L128.7,391.3 A180,180 0 0,1 76,264 Z" fill="#34A853"/>
+  <path d="M256,264 L76,264 A180,180 0 0,1 128.7,136.7 Z" fill="#FBBC04"/>
+  <path d="M256,264 L128.7,136.7 A180,180 0 0,1 256,84 Z" fill="#EA4335"/>
+  <!-- Slice dividers -->
+  <g stroke="#0a0a0a" stroke-width="5">
+    <line x1="256" y1="84" x2="256" y2="444"/>
+    <line x1="76" y1="264" x2="436" y2="264"/>
+    <line x1="128.7" y1="136.7" x2="383.3" y2="391.3"/>
+    <line x1="383.3" y1="136.7" x2="128.7" y2="391.3"/>
+  </g>
+  <circle cx="256" cy="264" r="180" fill="none" stroke="#ffffff" stroke-opacity="0.18" stroke-width="6"/>
+  <!-- Center Hub -->
+  <circle cx="256" cy="264" r="44" fill="#ffffff" stroke="#222222" stroke-width="6"/>
+  <circle cx="256" cy="264" r="16" fill="#0866FF"/>
+  <!-- Top Pointer -->
+  <polygon points="256,112 228,62 284,62" fill="#ffffff"/>
+  <circle cx="256" cy="54" r="18" fill="#ffffff"/>
+</svg>
